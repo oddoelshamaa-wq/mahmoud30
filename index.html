@@ -4,7 +4,7 @@ html
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fingerprint Sheet - Online</title>
+    <title>Fingerprint Sheet - Admin</title>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -31,7 +31,7 @@ html
         .user-info { padding: 15px; background: rgba(255,255,255,0.05); font-size: 0.8rem; text-align: center; color: #94a3b8; }
         
         /* === Main Content === */
-        .main-content { margin-right: 260px; width: calc(100% - 260px); padding: 30px; display: none; } /* Hidden until login */
+        .main-content { margin-right: 260px; width: calc(100% - 260px); padding: 30px; display: none; }
         .card { background: white; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border: 1px solid var(--border); overflow: hidden; margin-bottom: 25px; }
         
         /* === Filters & Buttons === */
@@ -91,7 +91,8 @@ html
     <div id="loginOverlay">
         <div class="login-box">
             <h2 style="margin-bottom:20px; color:var(--primary)">نظام الرواتب (Online)</h2>
-            <input type="email" id="loginEmail" placeholder="البريد الإلكتروني">
+            <p style="font-size:0.8rem; margin-bottom:15px; color:#666">ادخل بحساب admin@app.com لإنشاء باقي الحسابات</p>
+            <input type="email" id="loginEmail" placeholder="البريد الإلكتروني (مثلاً admin@app.com)">
             <input type="password" id="loginPassword" placeholder="كلمة المرور">
             <button id="btnLogin">تسجيل الدخول</button>
             <p class="error-msg" id="loginError"></p>
@@ -107,7 +108,7 @@ html
         <nav>
             <li class="active" onclick="switchView('main')"><i class="fa-solid fa-users"></i> الموظفين</li>
             <li onclick="switchView('print')"><i class="fa-solid fa-print"></i> طباعة الرواتب</li>
-            <li onclick="switchView('settings')"><i class="fa-solid fa-gear"></i> الإعدادات</li>
+            <li onclick="switchView('settings')"><i class="fa-solid fa-gear"></i> الإعدادات والمستخدمين</li>
         </nav>
         <div class="user-info">
             <span id="userEmailDisplay">...</span><br>
@@ -142,7 +143,6 @@ html
             </div>
 
             <div class="workspace">
-                <!-- القائمة الجانبية للموظفين -->
                 <div class="card no-print">
                     <div style="padding:15px; background:#f8fafc; border-bottom:1px solid #eee; font-weight:bold; display:flex; justify-content:space-between">
                         <span>موظفي الفرع</span>
@@ -151,7 +151,6 @@ html
                     <ul class="emp-list" id="employeesList"></ul>
                 </div>
 
-                <!-- نموذج الإدخال -->
                 <div class="card form-container">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom:1px solid #eee; padding-bottom:10px">
                         <h2 id="formTitle" style="font-size:1.4rem; color:var(--primary)">موظف جديد</h2>
@@ -179,7 +178,6 @@ html
                         <div class="input-group"><label>جزاءات</label><input type="number" id="generalDeduct"></div>
                     </div>
 
-                    <!-- جدول البصمة -->
                     <div style="margin-top:20px">
                         <div style="display:flex; justify-content:space-between; align-items:center">
                             <h4 style="margin:0">سجل الحضور</h4>
@@ -216,36 +214,49 @@ html
             <div id="printPreviewContainer" class="preview-wrapper"></div>
         </div>
 
-        <!-- === قسم الإعدادات === -->
+        <!-- === قسم الإعدادات والمستخدمين === -->
         <div id="settingsView" style="display:none">
             <div class="card" style="padding:30px; max-width:800px; margin:0 auto">
-                <h3 style="margin-bottom:20px; border-bottom:1px solid #eee; padding-bottom:10px">إدارة الفروع (Firebase)</h3>
+                
+                <!-- إضافة مستخدم جديد (ميزة جديدة) -->
+                <div style="background:#f0f9ff; border:1px solid #bae6fd; padding:20px; border-radius:8px; margin-bottom:30px">
+                    <h3 style="color:#0369a1; margin-bottom:15px"><i class="fa-solid fa-user-plus"></i> إنشاء حساب جديد للموظفين</h3>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr auto; gap:10px; align-items:end">
+                        <div class="input-group">
+                            <label>البريد الإلكتروني الجديد</label>
+                            <input type="email" id="newUserEmail" placeholder="user@app.com">
+                        </div>
+                        <div class="input-group">
+                            <label>كلمة المرور</label>
+                            <input type="text" id="newUserPass" placeholder="******">
+                        </div>
+                        <button class="btn-primary" onclick="createNewUser()">إنشاء الحساب</button>
+                    </div>
+                    <p style="font-size:0.8rem; color:#666; margin-top:10px">
+                        تنبيه: سيتم تسجيل خروجك تلقائياً عند إنشاء مستخدم جديد لضمان الأمان. يرجى إعادة الدخول بحسابك (admin).
+                    </p>
+                </div>
+
+                <h3 style="margin-bottom:20px; border-bottom:1px solid #eee; padding-bottom:10px">إدارة الفروع</h3>
                 <div style="display:flex; gap:10px; margin-bottom:20px">
                     <input type="text" id="newBranchName" placeholder="اسم الفرع الجديد..." style="flex:1;">
                     <button class="btn-primary" onclick="addBranch()">إضافة</button>
                 </div>
                 <ul id="branchesListDisplay" style="list-style:none; margin-bottom:30px; border:1px solid #eee; border-radius:8px;"></ul>
-                <p style="color:#666; font-size:0.9rem">ملاحظة: البيانات محفوظة الآن على سيرفرات Google Cloud بشكل آمن.</p>
             </div>
         </div>
     </div>
 
-<!-- ======================================================================= -->
-<!-- ======================= JAVASCRIPT MODULE ============================= -->
-<!-- ======================================================================= -->
-
 <script type="module">
-    // 1. استيراد دوال Firebase من الـ CDN
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
     import { 
         getFirestore, collection, doc, setDoc, getDoc, getDocs, updateDoc, deleteDoc, onSnapshot, query, where 
     } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
     import { 
-        getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged 
+        getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged 
     } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-    // 2. إعدادات Firebase (الخاصة بك)
     const firebaseConfig = {
       apiKey: "AIzaSyCZj1ur4bW6YPkWS1JCXLruTZXlZG1pHhY",
       authDomain: "fingerprint-sheet.firebaseapp.com",
@@ -256,81 +267,77 @@ html
       measurementId: "G-3DNFBZB0WJ"
     };
 
-    // 3. تهيئة التطبيق
     const app = initializeApp(firebaseConfig);
-    const analytics = getAnalytics(app);
     const db = getFirestore(app);
     const auth = getAuth(app);
 
-    // ======================================================
-    // === المتغيرات العامة ===
-    // ======================================================
     let employees = []; 
     let branches = ['الفرع الرئيسي']; 
-    let attendanceRecords = {}; // تخزين مؤقت للبصمة
+    let attendanceRecords = {};
 
-    // ======================================================
-    // === إدارة المصادقة (Auth) ===
-    // ======================================================
+    // Auth Logic
     const loginOverlay = document.getElementById('loginOverlay');
     const appContent = document.getElementById('appContent');
     const btnLogin = document.getElementById('btnLogin');
     const loginError = document.getElementById('loginError');
 
-    // مراقبة حالة الدخول
     onAuthStateChanged(auth, (user) => {
         if (user) {
-            // المستخدم مسجل دخول
             loginOverlay.style.display = 'none';
             appContent.style.display = 'block';
             document.getElementById('userEmailDisplay').innerText = user.email;
-            initApp(); // بدء تحميل البيانات
+            initApp();
         } else {
-            // المستخدم غير مسجل
             loginOverlay.style.display = 'flex';
             appContent.style.display = 'none';
         }
     });
 
-    // دالة تسجيل الدخول
     btnLogin.addEventListener('click', () => {
         const email = document.getElementById('loginEmail').value;
         const pass = document.getElementById('loginPassword').value;
         loginError.style.display = 'none';
         
         signInWithEmailAndPassword(auth, email, pass)
-            .then(() => {
-                console.log("Login Success");
-            })
+            .then(() => { console.log("Login Success"); })
             .catch((error) => {
-                loginError.innerText = "خطأ في تسجيل الدخول: " + error.message;
+                loginError.innerText = "خطأ: تأكد من الإيميل (مثل admin@app.com) وكلمة المرور";
                 loginError.style.display = 'block';
             });
     });
 
-    // دالة تسجيل الخروج (يتم ربطها بـ window لاستدعائها من HTML)
-    window.logoutApp = () => {
-        signOut(auth).then(() => location.reload());
+    window.logoutApp = () => { signOut(auth).then(() => location.reload()); };
+
+    // === دالة إنشاء مستخدم جديد ===
+    window.createNewUser = () => {
+        const email = document.getElementById('newUserEmail').value;
+        const pass = document.getElementById('newUserPass').value;
+
+        if(!email || !pass) return alert("يرجى كتابة الإيميل وكلمة المرور");
+
+        createUserWithEmailAndPassword(auth, email, pass)
+            .then((userCredential) => {
+                alert("تم إنشاء الحساب بنجاح! \nسيتم تسجيل الخروج الآن، يرجى الدخول بحساب المدير (admin) مرة أخرى.");
+                // Firebase يقوم بتسجيل دخول المستخدم الجديد تلقائياً، لذا يجب الخروج
+                signOut(auth);
+            })
+            .catch((error) => {
+                alert("خطأ في الإنشاء: " + error.message);
+            });
     };
 
-    // ======================================================
-    // === منطق قاعدة البيانات Firestore ===
-    // ======================================================
-
+    // App Logic
     function initApp() {
-        // 1. الاستماع للفروع (Realtime)
         const branchesRef = doc(db, "config", "branches");
         onSnapshot(branchesRef, (docSnap) => {
             if (docSnap.exists()) {
                 branches = docSnap.data().list || ['الفرع الرئيسي'];
             } else {
-                // إنشاء المستند إذا لم يكن موجوداً
                 setDoc(branchesRef, { list: ['الفرع الرئيسي'] });
             }
             updateUI();
         });
 
-        // 2. الاستماع للموظفين (Realtime)
         const q = query(collection(db, "employees"));
         onSnapshot(q, (querySnapshot) => {
             employees = [];
@@ -340,7 +347,6 @@ html
             renderEmployees();
         });
 
-        // 3. الاستماع لسجلات البصمة (Realtime)
         const attQ = query(collection(db, "attendance_records"));
         onSnapshot(attQ, (querySnapshot) => {
             attendanceRecords = {};
@@ -349,18 +355,12 @@ html
             });
         });
 
-        // ضبط التاريخ
         const d = new Date();
         document.getElementById('monthSelect').value = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
         initAttTable();
         setupExcel();
     }
 
-    // ======================================================
-    // === واجهة المستخدم والمنطق ===
-    // ======================================================
-
-    // جعل الدوال متاحة للـ HTML (لأننا داخل Module)
     window.switchView = (view) => {
         document.getElementById('mainView').style.display = view === 'main' ? 'block' : 'none';
         document.getElementById('printView').style.display = view === 'print' ? 'block' : 'none';
@@ -391,22 +391,19 @@ html
                 <span>${b}</span> <button class="btn-danger" style="padding:5px 10px; font-size:0.8rem" onclick="delBranch('${b}')"><i class="fa-solid fa-trash"></i></button>
             </li>`;
         });
-        renderEmployees(); // إعادة رسم القائمة عند تحديث الفروع
+        renderEmployees();
     }
 
-    // جعل renderEmployees متاحة عالمياً
     window.renderEmployees = () => {
         const branch = document.getElementById('branchSelect').value;
         const month = document.getElementById('monthSelect').value;
         const list = document.getElementById('employeesList');
         list.innerHTML = '';
 
-        // تصفية وعرض الموظفين
         const uniqueIds = new Set();
         const branchEmployees = [];
 
         employees.forEach(e => {
-            // نتحقق من الفرع من السجل نفسه
             if (e.branch === branch) {
                 if(!uniqueIds.has(e.id)) {
                     uniqueIds.add(e.id);
@@ -423,8 +420,6 @@ html
         branchEmployees.sort((a,b) => a.name.localeCompare(b.name));
 
         branchEmployees.forEach(masterEmp => {
-            // هل يوجد سجل لهذا الشهر بالتحديد؟
-            // المفتاح الفريد للمستند في Firestore هو: ID_Month (مثال: 101_2023-11)
             const docKey = `${masterEmp.id}_${month}`;
             const hasRecord = employees.some(e => e.docKey === docKey && e.branch === branch);
             
@@ -457,7 +452,6 @@ html
         const month = document.getElementById('monthSelect').value;
         const docKey = `${id}_${month}`;
         
-        // البحث عن السجل المطابق للشهر الحالي
         let emp = employees.find(e => e.docKey === docKey && e.branch === branch);
         
         if (emp) {
@@ -465,8 +459,7 @@ html
             document.getElementById('formTitle').innerText = 'تعديل: ' + emp.name;
             document.getElementById('btnDelete').style.display = 'inline-flex';
         } else {
-            // البحث عن بيانات سابقة لنفس الموظف لنسخ المعلومات الثابتة
-            const prevRecords = employees.filter(e => e.id == id); // مقارنة مرنة
+            const prevRecords = employees.filter(e => e.id == id);
             if (prevRecords.length > 0) {
                 const lastRec = prevRecords[prevRecords.length - 1];
                 document.getElementById('empName').value = lastRec.name;
@@ -475,7 +468,6 @@ html
                 document.getElementById('dailyWage').value = lastRec.financials.wage;
                 document.getElementById('insurance').value = lastRec.financials.insurance || 0;
                 
-                // تصفير الشهر الجديد
                 document.getElementById('bonus').value = '';
                 document.getElementById('loans').value = '';
                 document.getElementById('withdraw10').value = '';
@@ -489,8 +481,6 @@ html
         }
         
         document.getElementById('empId').disabled = true;
-        
-        // تظليل القائمة
         setTimeout(() => {
             document.querySelectorAll('.emp-list li').forEach(li => li.classList.remove('selected'));
             const listItems = document.querySelectorAll('.emp-list li');
@@ -526,7 +516,6 @@ html
         }
     }
 
-    // === الحفظ في Firestore ===
     window.saveEmployee = async () => {
         const id = document.getElementById('empId').value.trim();
         const name = document.getElementById('empName').value.trim();
@@ -535,7 +524,6 @@ html
 
         if(!id || !name) return alert('يرجى إدخال الاسم ورقم البصمة');
 
-        // إنشاء مفتاح فريد للمستند (رقم الموظف + الشهر) لمنع التكرار
         const docKey = `${id}_${month}`;
 
         const empData = {
@@ -555,13 +543,10 @@ html
         };
 
         try {
-            // حفظ في Firestore
             await setDoc(doc(db, "employees", docKey), empData);
             alert('تم الحفظ بنجاح على السيرفر');
-            // لا حاجة لـ renderEmployees يدوياً لأن onSnapshot ستقوم بذلك
         } catch (e) {
             alert("خطأ في الحفظ: " + e.message);
-            console.error(e);
         }
     };
 
@@ -580,7 +565,6 @@ html
         }
     };
 
-    // === إدارة الفروع (Firestore) ===
     window.addBranch = async () => {
         const name = document.getElementById('newBranchName').value;
         if(name && !branches.includes(name)) {
@@ -597,7 +581,6 @@ html
         }
     };
 
-    // === البصمة وحساب الساعات ===
     function initAttTable() {
         const tbody = document.querySelector('#attTable tbody');
         tbody.innerHTML = '';
@@ -611,7 +594,6 @@ html
         }
     }
 
-    // جعل دالة calcRow متاحة عالمياً
     window.calcRow = (tr) => {
         const i = tr.querySelector('.in').value;
         const o = tr.querySelector('.out').value;
@@ -637,7 +619,6 @@ html
         return data;
     }
 
-    // === استيراد Excel وتحميل البصمة ===
     function ExcelDateToJSDate(serial) {
         var utc_days  = Math.floor(serial - 25569);
         var utc_value = utc_days * 86400;
@@ -655,7 +636,6 @@ html
                 const workbook = XLSX.read(evt.target.result, {type:'array'});
                 const sheet = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], {header:1, raw:true});
                 
-                // هيكل مؤقت للتجميع
                 let batchData = {};
 
                 sheet.forEach((row, idx) => {
@@ -672,7 +652,6 @@ html
                             const dayKey = dateObj.getDate();
                             const timeStr = dateObj.toTimeString().split(' ')[0].substring(0,5);
 
-                            // تجميع البيانات حسب ID
                             if(!batchData[id]) batchData[id] = {};
                             if(!batchData[id][monthKey]) batchData[id][monthKey] = {};
                             if(!batchData[id][monthKey][dayKey]) batchData[id][monthKey][dayKey] = [];
@@ -684,10 +663,8 @@ html
                     }
                 });
 
-                // رفع البيانات إلى Firestore (مستند لكل موظف)
                 let promises = [];
                 for (const [id, months] of Object.entries(batchData)) {
-                    // دمج مع البيانات القديمة (نستخدم setDoc مع merge:true)
                     const docRef = doc(db, "attendance_records", id);
                     promises.push(setDoc(docRef, months, { merge: true }));
                 }
@@ -728,7 +705,6 @@ html
         });
     };
 
-    // === الطباعة ===
     window.preparePrint = () => {
         const container = document.getElementById('printPreviewContainer');
         const branch = document.getElementById('branchSelect').value;
@@ -800,3 +776,14 @@ html
 </script>
 </body>
 </html>
+```
+
+### طريقة الاستخدام بعد التحديث:
+
+1.  **أول مرة فقط:** ادخل بحسابك `admin@app.com` وكلمة المرور `123456`.
+2.  **لإضافة موظف:**
+    *   افتح القائمة الجانبية -> **الإعدادات والمستخدمين**.
+    *   ستجد مربع جديد "إنشاء حساب جديد للموظفين".
+    *   اكتب الإيميل الجديد (مثلاً `user1@app.com`) وكلمة المرور.
+    *   اضغط **إنشاء الحساب**.
+    *   *ملاحظة:* النظام سيقوم بتسجيل خروجك تلقائياً بعد إنشاء الحساب (هذا شرط أمني من جوجل)، قم بالدخول مرة أخرى بحساب المدير.
