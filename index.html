@@ -4,7 +4,7 @@ html
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fingerprint Sheet - Admin</title>
+    <title>Fingerprint Sheet - Online (Direct)</title>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
@@ -14,24 +14,16 @@ html
         * { box-sizing: border-box; margin: 0; padding: 0; outline: none; }
         body { font-family: 'Tajawal', sans-serif; background-color: var(--bg-body); color: var(--text-main); direction: rtl; display: flex; min-height: 100vh; }
         
-        /* === Login Overlay === */
-        #loginOverlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #0f172a; z-index: 9999; display: flex; justify-content: center; align-items: center; flex-direction: column; }
-        .login-box { background: white; padding: 40px; border-radius: 12px; width: 350px; text-align: center; }
-        .login-box input { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 6px; }
-        .login-box button { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: bold; }
-        .login-box button:hover { background: var(--primary-light); }
-        .error-msg { color: red; font-size: 0.9rem; margin-top: 10px; display: none; }
-
-        /* === Sidebar & Layout === */
+        /* === Sidebar === */
         .sidebar { width: 260px; background: #0f172a; color: white; height: 100vh; position: fixed; right: 0; top: 0; display: flex; flex-direction: column; z-index: 1000; }
         .sidebar .brand { padding: 25px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 10px; font-size: 1.1rem; font-weight: bold; }
         .sidebar nav { padding: 10px; flex: 1; }
         .sidebar nav li { padding: 12px 20px; cursor: pointer; color: #94a3b8; display: flex; align-items: center; gap: 12px; transition: 0.2s; border-radius: 8px; margin-bottom: 5px; font-weight: 500; }
         .sidebar nav li:hover, .sidebar nav li.active { background: var(--primary-light); color: white; }
-        .user-info { padding: 15px; background: rgba(255,255,255,0.05); font-size: 0.8rem; text-align: center; color: #94a3b8; }
         
         /* === Main Content === */
-        .main-content { margin-right: 260px; width: calc(100% - 260px); padding: 30px; display: none; }
+        /* تم التعديل ليظهر مباشرة */
+        .main-content { margin-right: 260px; width: calc(100% - 260px); padding: 30px; display: block; } 
         .card { background: white; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border: 1px solid var(--border); overflow: hidden; margin-bottom: 25px; }
         
         /* === Filters & Buttons === */
@@ -87,19 +79,7 @@ html
 </head>
 <body>
 
-    <!-- شاشة تسجيل الدخول -->
-    <div id="loginOverlay">
-        <div class="login-box">
-            <h2 style="margin-bottom:20px; color:var(--primary)">نظام الرواتب (Online)</h2>
-            <p style="font-size:0.8rem; margin-bottom:15px; color:#666">ادخل بحساب admin@app.com لإنشاء باقي الحسابات</p>
-            <input type="email" id="loginEmail" placeholder="البريد الإلكتروني (مثلاً admin@app.com)">
-            <input type="password" id="loginPassword" placeholder="كلمة المرور">
-            <button id="btnLogin">تسجيل الدخول</button>
-            <p class="error-msg" id="loginError"></p>
-        </div>
-    </div>
-
-    <!-- القائمة الجانبية -->
+    <!-- القائمة الجانبية (بدون تسجيل خروج) -->
     <div class="sidebar no-print">
         <div class="brand">
             <i class="fa-solid fa-cloud"></i>
@@ -108,12 +88,8 @@ html
         <nav>
             <li class="active" onclick="switchView('main')"><i class="fa-solid fa-users"></i> الموظفين</li>
             <li onclick="switchView('print')"><i class="fa-solid fa-print"></i> طباعة الرواتب</li>
-            <li onclick="switchView('settings')"><i class="fa-solid fa-gear"></i> الإعدادات والمستخدمين</li>
+            <li onclick="switchView('settings')"><i class="fa-solid fa-gear"></i> الإعدادات</li>
         </nav>
-        <div class="user-info">
-            <span id="userEmailDisplay">...</span><br>
-            <a href="#" onclick="logoutApp()" style="color:#f87171; text-decoration:none">تسجيل خروج</a>
-        </div>
     </div>
 
     <!-- المحتوى -->
@@ -146,7 +122,7 @@ html
                 <div class="card no-print">
                     <div style="padding:15px; background:#f8fafc; border-bottom:1px solid #eee; font-weight:bold; display:flex; justify-content:space-between">
                         <span>موظفي الفرع</span>
-                        <span style="font-size:0.8rem; color:green" id="syncStatus">متصل <i class="fa-solid fa-wifi"></i></span>
+                        <span style="font-size:0.8rem; color:green" id="syncStatus">متصل بالسيرفر <i class="fa-solid fa-database"></i></span>
                     </div>
                     <ul class="emp-list" id="employeesList"></ul>
                 </div>
@@ -214,29 +190,9 @@ html
             <div id="printPreviewContainer" class="preview-wrapper"></div>
         </div>
 
-        <!-- === قسم الإعدادات والمستخدمين === -->
+        <!-- === قسم الإعدادات === -->
         <div id="settingsView" style="display:none">
             <div class="card" style="padding:30px; max-width:800px; margin:0 auto">
-                
-                <!-- إضافة مستخدم جديد (ميزة جديدة) -->
-                <div style="background:#f0f9ff; border:1px solid #bae6fd; padding:20px; border-radius:8px; margin-bottom:30px">
-                    <h3 style="color:#0369a1; margin-bottom:15px"><i class="fa-solid fa-user-plus"></i> إنشاء حساب جديد للموظفين</h3>
-                    <div style="display:grid; grid-template-columns: 1fr 1fr auto; gap:10px; align-items:end">
-                        <div class="input-group">
-                            <label>البريد الإلكتروني الجديد</label>
-                            <input type="email" id="newUserEmail" placeholder="user@app.com">
-                        </div>
-                        <div class="input-group">
-                            <label>كلمة المرور</label>
-                            <input type="text" id="newUserPass" placeholder="******">
-                        </div>
-                        <button class="btn-primary" onclick="createNewUser()">إنشاء الحساب</button>
-                    </div>
-                    <p style="font-size:0.8rem; color:#666; margin-top:10px">
-                        تنبيه: سيتم تسجيل خروجك تلقائياً عند إنشاء مستخدم جديد لضمان الأمان. يرجى إعادة الدخول بحسابك (admin).
-                    </p>
-                </div>
-
                 <h3 style="margin-bottom:20px; border-bottom:1px solid #eee; padding-bottom:10px">إدارة الفروع</h3>
                 <div style="display:flex; gap:10px; margin-bottom:20px">
                     <input type="text" id="newBranchName" placeholder="اسم الفرع الجديد..." style="flex:1;">
@@ -248,14 +204,12 @@ html
     </div>
 
 <script type="module">
+    // استيراد Firebase (بدون Auth)
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
     import { 
-        getFirestore, collection, doc, setDoc, getDoc, getDocs, updateDoc, deleteDoc, onSnapshot, query, where 
+        getFirestore, collection, doc, setDoc, getDoc, updateDoc, deleteDoc, onSnapshot, query 
     } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-    import { 
-        getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut, onAuthStateChanged 
-    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
     const firebaseConfig = {
       apiKey: "AIzaSyCZj1ur4bW6YPkWS1JCXLruTZXlZG1pHhY",
@@ -269,65 +223,16 @@ html
 
     const app = initializeApp(firebaseConfig);
     const db = getFirestore(app);
-    const auth = getAuth(app);
 
     let employees = []; 
     let branches = ['الفرع الرئيسي']; 
     let attendanceRecords = {};
 
-    // Auth Logic
-    const loginOverlay = document.getElementById('loginOverlay');
-    const appContent = document.getElementById('appContent');
-    const btnLogin = document.getElementById('btnLogin');
-    const loginError = document.getElementById('loginError');
+    // بدء التطبيق مباشرة
+    initApp();
 
-    onAuthStateChanged(auth, (user) => {
-        if (user) {
-            loginOverlay.style.display = 'none';
-            appContent.style.display = 'block';
-            document.getElementById('userEmailDisplay').innerText = user.email;
-            initApp();
-        } else {
-            loginOverlay.style.display = 'flex';
-            appContent.style.display = 'none';
-        }
-    });
-
-    btnLogin.addEventListener('click', () => {
-        const email = document.getElementById('loginEmail').value;
-        const pass = document.getElementById('loginPassword').value;
-        loginError.style.display = 'none';
-        
-        signInWithEmailAndPassword(auth, email, pass)
-            .then(() => { console.log("Login Success"); })
-            .catch((error) => {
-                loginError.innerText = "خطأ: تأكد من الإيميل (مثل admin@app.com) وكلمة المرور";
-                loginError.style.display = 'block';
-            });
-    });
-
-    window.logoutApp = () => { signOut(auth).then(() => location.reload()); };
-
-    // === دالة إنشاء مستخدم جديد ===
-    window.createNewUser = () => {
-        const email = document.getElementById('newUserEmail').value;
-        const pass = document.getElementById('newUserPass').value;
-
-        if(!email || !pass) return alert("يرجى كتابة الإيميل وكلمة المرور");
-
-        createUserWithEmailAndPassword(auth, email, pass)
-            .then((userCredential) => {
-                alert("تم إنشاء الحساب بنجاح! \nسيتم تسجيل الخروج الآن، يرجى الدخول بحساب المدير (admin) مرة أخرى.");
-                // Firebase يقوم بتسجيل دخول المستخدم الجديد تلقائياً، لذا يجب الخروج
-                signOut(auth);
-            })
-            .catch((error) => {
-                alert("خطأ في الإنشاء: " + error.message);
-            });
-    };
-
-    // App Logic
     function initApp() {
+        // فروع
         const branchesRef = doc(db, "config", "branches");
         onSnapshot(branchesRef, (docSnap) => {
             if (docSnap.exists()) {
@@ -338,6 +243,7 @@ html
             updateUI();
         });
 
+        // موظفين
         const q = query(collection(db, "employees"));
         onSnapshot(q, (querySnapshot) => {
             employees = [];
@@ -347,6 +253,7 @@ html
             renderEmployees();
         });
 
+        // بصمات
         const attQ = query(collection(db, "attendance_records"));
         onSnapshot(attQ, (querySnapshot) => {
             attendanceRecords = {};
@@ -361,6 +268,7 @@ html
         setupExcel();
     }
 
+    // دوال الواجهة
     window.switchView = (view) => {
         document.getElementById('mainView').style.display = view === 'main' ? 'block' : 'none';
         document.getElementById('printView').style.display = view === 'print' ? 'block' : 'none';
@@ -553,7 +461,7 @@ html
     window.deleteEmployeeRecord = async () => {
         const id = document.getElementById('empId').value;
         const month = document.getElementById('monthSelect').value;
-        if(!confirm('هل أنت متأكد من حذف هذا السجل نهائياً من قاعدة البيانات؟')) return;
+        if(!confirm('هل أنت متأكد من حذف هذا السجل نهائياً؟')) return;
         
         const docKey = `${id}_${month}`;
         try {
@@ -637,7 +545,6 @@ html
                 const sheet = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], {header:1, raw:true});
                 
                 let batchData = {};
-
                 sheet.forEach((row, idx) => {
                     if(idx === 0) return;
                     let id = row[2];
@@ -691,7 +598,6 @@ html
         }
 
         const monthData = attendanceRecords[id][month];
-        
         Object.entries(monthData).forEach(([day, times]) => {
             const sortedTimes = times.sort();
             const tr = document.querySelector(`tr[data-day="${day}"]`);
@@ -772,18 +678,6 @@ html
         const net = (basicSalary + (emp.financials.bonus || 0)) - totalDeductions;
         return { workDays, basicSalary, overtimeHours, delayHours, delayValue, loanDeduct, net };
     }
-
 </script>
 </body>
 </html>
-```
-
-### طريقة الاستخدام بعد التحديث:
-
-1.  **أول مرة فقط:** ادخل بحسابك `admin@app.com` وكلمة المرور `123456`.
-2.  **لإضافة موظف:**
-    *   افتح القائمة الجانبية -> **الإعدادات والمستخدمين**.
-    *   ستجد مربع جديد "إنشاء حساب جديد للموظفين".
-    *   اكتب الإيميل الجديد (مثلاً `user1@app.com`) وكلمة المرور.
-    *   اضغط **إنشاء الحساب**.
-    *   *ملاحظة:* النظام سيقوم بتسجيل خروجك تلقائياً بعد إنشاء الحساب (هذا شرط أمني من جوجل)، قم بالدخول مرة أخرى بحساب المدير.
