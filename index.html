@@ -1,35 +1,65 @@
-html
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fingerprint Sheet - Online (Direct)</title>
+    <title>نظام الرواتب - Fingerprint Sheet</title>
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-    
+
+    <!-- === مكتبات Firebase === -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
+
     <style>
-        :root { --primary: #1e3a8a; --primary-light: #3b82f6; --bg-body: #f8fafc; --surface: #ffffff; --border: #e2e8f0; --text-main: #1e293b; --success: #15803d; --danger: #b91c1c; }
-        * { box-sizing: border-box; margin: 0; padding: 0; outline: none; }
-        body { font-family: 'Tajawal', sans-serif; background-color: var(--bg-body); color: var(--text-main); direction: rtl; display: flex; min-height: 100vh; }
+        :root {
+            --primary: #1e3a8a;
+            --primary-light: #3b82f6;
+            --bg-body: #f8fafc;
+            --surface: #ffffff;
+            --border: #e2e8f0;
+            --text-main: #1e293b;
+            --success: #15803d;
+            --danger: #b91c1c;
+        }
         
-        /* === Sidebar === */
+        * { box-sizing: border-box; margin: 0; padding: 0; outline: none; }
+        body { font-family: 'Tajawal', sans-serif; background-color: var(--bg-body); color: var(--text-main); direction: rtl; min-height: 100vh; margin: 0; }
+        
+        /* === شاشة تسجيل الدخول === */
+        #loginScreen {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: #0f172a; display: flex; justify-content: center; align-items: center; z-index: 2000;
+        }
+        .login-box {
+            background: white; padding: 40px; border-radius: 15px; width: 90%; max-width: 400px;
+            text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+        }
+        .login-box h2 { color: var(--primary); margin-bottom: 20px; }
+        .login-box input { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 8px; font-family: inherit; }
+        .login-box button { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 1rem; }
+        .login-box button:hover { background: #172554; }
+        .error-msg { color: red; font-size: 0.9rem; margin-top: 10px; display: none; }
+
+        /* === النظام الرئيسي === */
+        #appContainer { display: none; display: flex; width: 100%; min-height: 100vh; }
+        
         .sidebar { width: 260px; background: #0f172a; color: white; height: 100vh; position: fixed; right: 0; top: 0; display: flex; flex-direction: column; z-index: 1000; }
-        .sidebar .brand { padding: 25px; border-bottom: 1px solid rgba(255,255,255,0.1); display: flex; align-items: center; gap: 10px; font-size: 1.1rem; font-weight: bold; }
-        .sidebar nav { padding: 10px; flex: 1; }
+        .sidebar .brand { padding: 25px; border-bottom: 1px solid rgba(255,255,255,0.1); font-size: 1.2rem; display: flex; align-items: center; gap: 10px; }
+        .sidebar nav { padding: 10px; flex-grow: 1; }
         .sidebar nav li { padding: 12px 20px; cursor: pointer; color: #94a3b8; display: flex; align-items: center; gap: 12px; transition: 0.2s; border-radius: 8px; margin-bottom: 5px; font-weight: 500; }
         .sidebar nav li:hover, .sidebar nav li.active { background: var(--primary-light); color: white; }
-        
-        /* === Main Content === */
-        /* تم التعديل ليظهر مباشرة */
-        .main-content { margin-right: 260px; width: calc(100% - 260px); padding: 30px; display: block; } 
+        .user-info { padding: 15px; background: rgba(255,255,255,0.05); font-size: 0.85rem; color: #ccc; text-align: center; border-top: 1px solid rgba(255,255,255,0.1); }
+
+        .main-content { margin-right: 260px; width: calc(100% - 260px); padding: 30px; }
         .card { background: white; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border: 1px solid var(--border); overflow: hidden; margin-bottom: 25px; }
         
-        /* === Filters & Buttons === */
         .filters-header { background: #fff; padding: 20px; display: flex; gap: 15px; flex-wrap: wrap; align-items: flex-end; border-bottom: 1px solid #f1f5f9; }
         .input-group label { display: block; font-size: 0.85rem; font-weight: bold; margin-bottom: 6px; color: #64748b; }
         .input-group input, .input-group select { padding: 10px; border: 1px solid var(--border); border-radius: 8px; min-width: 160px; font-family: inherit; font-size: 0.95rem; }
+        
         button { border: none; padding: 10px 18px; border-radius: 8px; cursor: pointer; font-family: inherit; font-weight: bold; display: flex; gap: 8px; align-items: center; transition: 0.2s; font-size: 0.9rem; }
         .btn-primary { background: var(--primary); color: white; }
         .btn-secondary { background: white; border: 1px solid var(--border); color: #334155; }
@@ -37,7 +67,6 @@ html
         .btn-success { background: #dcfce7; color: #166534; }
         .btn-save { background: #0f172a; color: white; width: 100%; justify-content: center; padding: 12px; font-size: 1rem; }
 
-        /* === Workspace === */
         .workspace { display: grid; grid-template-columns: 280px 1fr; gap: 25px; align-items: start; }
         .emp-list { list-style: none; height: 600px; overflow-y: auto; padding: 10px; }
         .emp-list li { padding: 12px; border-bottom: 1px solid #f1f5f9; cursor: pointer; display: flex; justify-content: space-between; align-items:center; border-radius: 6px; margin-bottom: 4px; transition: 0.1s; }
@@ -47,22 +76,22 @@ html
         .status-active { background-color: var(--success); }
         .status-inactive { background-color: #cbd5e1; }
 
-        /* === Forms & Tables === */
         .form-container { padding: 25px; }
         .form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; margin-bottom: 20px; }
-        .section-header { grid-column: 1/-1; margin: 15px 0 10px 0; padding-bottom: 8px; border-bottom: 2px solid #f1f5f9; color: var(--primary); font-weight: bold; font-size: 1rem; }
+        .section-header { grid-column: 1/-1; margin: 15px 0 10px 0; padding-bottom: 8px; border-bottom: 2px solid #f1f5f9; color: var(--primary); font-weight: bold; }
+        
         .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 8px; margin-top: 10px; }
         .attendance-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
-        .attendance-table th { background: #f8fafc; padding: 10px; text-align: center; border-bottom: 1px solid var(--border); font-weight: 700; }
+        .attendance-table th { background: #f8fafc; padding: 10px; text-align: center; border-bottom: 1px solid var(--border); }
         .attendance-table td { padding: 5px; border-bottom: 1px solid var(--border); text-align: center; }
         .attendance-table input { width: 100%; border: none; text-align: center; background: transparent; padding: 5px; font-family: monospace; font-size: 1rem; }
-        
-        /* === Print === */
+        .attendance-table input:focus { background: #eff6ff; }
+
+        /* الطباعة */
         .preview-wrapper { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; padding: 20px; }
         .salary-card { background: #fff; border: 1px solid var(--border); border-radius: 10px; overflow: hidden; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05); }
         .card-header { background-color: var(--primary); color: white; padding: 12px; text-align: center; font-weight: 800; border-bottom: 1px solid #000; }
         .card-table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
-        .card-table tr { border-bottom: 1px solid #e2e8f0; }
         .label-col { background-color: #f8fafc; width: 55%; padding: 8px 12px; text-align: right; font-weight: 600; color: #475569; border-left: 1px solid #e2e8f0; }
         .value-col { width: 45%; padding: 8px 12px; text-align: center; font-weight: 700; color: #0f172a; font-family: monospace; }
         
@@ -70,147 +99,181 @@ html
             .sidebar, .main-content > div:not(#printView), .no-print, .filters-header, button { display: none !important; }
             body, .main-content { margin: 0; padding: 0; background: white; width: 100%; }
             #printView, #printPreviewContainer { display: block !important; }
-            .preview-wrapper { display: grid !important; grid-template-columns: repeat(2, 1fr) !important; gap: 15px !important; }
-            .salary-card { border: 2px solid #000 !important; box-shadow: none !important; margin-bottom: 10px; page-break-inside: avoid; }
-            .card-header { background-color: #eee !important; color: #000 !important; border-bottom: 2px solid #000 !important; -webkit-print-color-adjust: exact; }
-            .card-table tr { border-bottom: 1px solid #000 !important; }
+            .preview-wrapper { display: grid !important; grid-template-columns: repeat(3, 1fr) !important; gap: 10px !important; }
+            .salary-card { border: 2px solid #000 !important; box-shadow: none !important; margin-bottom: 10px; }
+            .card-header { background-color: #eee !important; color: #000 !important; border-bottom: 2px solid #000 !important; }
         }
     </style>
 </head>
 <body>
 
-    <!-- القائمة الجانبية (بدون تسجيل خروج) -->
-    <div class="sidebar no-print">
-        <div class="brand">
-            <i class="fa-solid fa-cloud"></i>
-            <span>Fingerprint Sheet</span>
+    <!-- === شاشة تسجيل الدخول === -->
+    <div id="loginScreen">
+        <div class="login-box">
+            <h2>نظام الرواتب <i class="fa-solid fa-lock"></i></h2>
+            <p style="margin-bottom:15px; color:#666">يرجى تسجيل الدخول للمتابعة</p>
+            <input type="email" id="loginEmail" placeholder="البريد الإلكتروني">
+            <input type="password" id="loginPass" placeholder="كلمة المرور">
+            <button onclick="loginUser()">دخول</button>
+            <div id="loginError" class="error-msg">بيانات الدخول غير صحيحة</div>
         </div>
-        <nav>
-            <li class="active" onclick="switchView('main')"><i class="fa-solid fa-users"></i> الموظفين</li>
-            <li onclick="switchView('print')"><i class="fa-solid fa-print"></i> طباعة الرواتب</li>
-            <li onclick="switchView('settings')"><i class="fa-solid fa-gear"></i> الإعدادات</li>
-        </nav>
     </div>
 
-    <!-- المحتوى -->
-    <div class="main-content" id="appContent">
+    <!-- === التطبيق الرئيسي (يظهر بعد الدخول) === -->
+    <div id="appContainer">
         
-        <!-- === قسم الموظفين === -->
-        <div id="mainView">
-            <div class="card no-print">
-                <div class="filters-header">
-                    <div class="input-group">
-                        <label>الفرع الحالي</label>
-                        <select id="branchSelect" onchange="renderEmployees()"></select>
-                    </div>
-                    <div class="input-group">
-                        <label>شهر الراتب</label>
-                        <input type="month" id="monthSelect" onchange="renderEmployees()">
-                    </div>
-                    <div style="flex-grow: 1;"></div>
-                    <button class="btn-success" onclick="document.getElementById('excelInput').click()">
-                        <i class="fa-solid fa-file-excel"></i> استيراد بصمة (Excel)
-                    </button>
-                    <input type="file" id="excelInput" style="display:none" accept=".xlsx, .xls">
-                    <button class="btn-secondary" onclick="resetForm()">
-                        <i class="fa-solid fa-plus"></i> موظف جديد
-                    </button>
-                </div>
+        <!-- القائمة الجانبية -->
+        <div class="sidebar no-print">
+            <div class="brand">
+                <i class="fa-solid fa-fingerprint"></i>
+                <span>Fingerprint Sheet</span>
             </div>
+            <nav>
+                <li class="active" onclick="switchView('main')"><i class="fa-solid fa-users"></i> الموظفين</li>
+                <li onclick="switchView('print')"><i class="fa-solid fa-print"></i> طباعة الرواتب</li>
+                <li onclick="switchView('settings')"><i class="fa-solid fa-gear"></i> الإعدادات والمستخدمين</li>
+            </nav>
+            <div class="user-info">
+                <span id="currentUserDisplay">...</span>
+                <br>
+                <button class="btn-danger" onclick="logoutUser()" style="margin-top:10px; width:100%; justify-content:center; font-size:0.8rem">
+                    <i class="fa-solid fa-sign-out-alt"></i> خروج
+                </button>
+            </div>
+        </div>
 
-            <div class="workspace">
+        <!-- المحتوى -->
+        <div class="main-content">
+            
+            <!-- === قسم الموظفين === -->
+            <div id="mainView">
                 <div class="card no-print">
-                    <div style="padding:15px; background:#f8fafc; border-bottom:1px solid #eee; font-weight:bold; display:flex; justify-content:space-between">
-                        <span>موظفي الفرع</span>
-                        <span style="font-size:0.8rem; color:green" id="syncStatus">متصل بالسيرفر <i class="fa-solid fa-database"></i></span>
-                    </div>
-                    <ul class="emp-list" id="employeesList"></ul>
-                </div>
-
-                <div class="card form-container">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom:1px solid #eee; padding-bottom:10px">
-                        <h2 id="formTitle" style="font-size:1.4rem; color:var(--primary)">موظف جديد</h2>
-                        <button class="btn-danger" onclick="deleteEmployeeRecord()" id="btnDelete" style="display:none">
-                            <i class="fa-solid fa-trash"></i> حذف سجل الشهر
+                    <div class="filters-header">
+                        <div class="input-group">
+                            <label>الفرع الحالي</label>
+                            <select id="branchSelect" onchange="renderEmployees()"></select>
+                        </div>
+                        <div class="input-group">
+                            <label>شهر الراتب</label>
+                            <input type="month" id="monthSelect" onchange="renderEmployees()">
+                        </div>
+                        <div style="flex-grow: 1;"></div>
+                        <button class="btn-success" onclick="document.getElementById('excelInput').click()">
+                            <i class="fa-solid fa-file-excel"></i> استيراد بصمة (Excel)
+                        </button>
+                        <input type="file" id="excelInput" style="display:none" accept=".xlsx, .xls">
+                        <button class="btn-secondary" onclick="resetForm()">
+                            <i class="fa-solid fa-plus"></i> موظف جديد
                         </button>
                     </div>
-                    
-                    <div class="form-grid">
-                        <div class="section-header">البيانات الأساسية</div>
-                        <div class="input-group"><label>اسم الموظف</label><input type="text" id="empName"></div>
-                        <div class="input-group"><label>رقم البصمة (ID)</label><input type="number" id="empId" placeholder="هام للربط"></div>
-                        <div class="input-group"><label>المسمى الوظيفي</label><input type="text" id="jobTitle"></div>
-                        
-                        <div class="section-header">الاستحقاقات (لهذا الشهر)</div>
-                        <div class="input-group"><label>اليومية (ج.م)</label><input type="number" id="dailyWage"></div>
-                        <div class="input-group"><label>حوافز / إضافي</label><input type="number" id="bonus"></div>
-                        
-                        <div class="section-header">الخصومات (لهذا الشهر)</div>
-                        <div class="input-group"><label>إجمالي السلف</label><input type="number" id="loans"></div>
-                        <div class="input-group"><label>تقسيط السلفة (شهور)</label><input type="number" id="loanMonths" value="1"></div>
-                        <div class="input-group"><label>تأمينات</label><input type="number" id="insurance"></div>
-                        <div class="input-group"><label>سحب يوم 10</label><input type="number" id="withdraw10"></div>
-                        <div class="input-group"><label>سحب يوم 20</label><input type="number" id="withdraw20"></div>
-                        <div class="input-group"><label>جزاءات</label><input type="number" id="generalDeduct"></div>
+                </div>
+
+                <div class="workspace">
+                    <!-- القائمة الجانبية للموظفين -->
+                    <div class="card no-print">
+                        <div style="padding:15px; background:#f8fafc; border-bottom:1px solid #eee; font-weight:bold">
+                            موظفي الفرع
+                            <span style="font-size:0.7rem; color:#666; display:block; font-weight:normal">جاري الاتصال بالسيرفر...</span>
+                        </div>
+                        <ul class="emp-list" id="employeesList"></ul>
                     </div>
 
-                    <div style="margin-top:20px">
-                        <div style="display:flex; justify-content:space-between; align-items:center">
-                            <h4 style="margin:0">سجل الحضور</h4>
-                            <button class="btn-secondary" onclick="loadAttendanceFromDB()" style="padding:5px 10px; font-size:0.8rem">
-                                <i class="fa-solid fa-cloud-download"></i> جلب البصمة
+                    <!-- نموذج الإدخال -->
+                    <div class="card form-container">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom:1px solid #eee; padding-bottom:10px">
+                            <h2 id="formTitle" style="font-size:1.4rem; color:var(--primary)">موظف جديد</h2>
+                            <button class="btn-danger" id="btnDeleteRecord" style="display:none" onclick="deleteEmployeeRecord()">
+                                <i class="fa-solid fa-trash"></i> حذف السجل
                             </button>
                         </div>
-                        <div class="table-wrap" style="max-height:300px; overflow-y:auto">
-                            <table class="attendance-table" id="attTable">
-                                <thead><tr><th>اليوم</th><th>دخول</th><th>خروج</th><th>ساعات</th></tr></thead>
-                                <tbody></tbody>
-                            </table>
+                        
+                        <div class="form-grid">
+                            <div class="section-header">البيانات الأساسية</div>
+                            <div class="input-group"><label>اسم الموظف</label><input type="text" id="empName"></div>
+                            <div class="input-group"><label>رقم البصمة (ID)</label><input type="number" id="empId" placeholder="هام جداً"></div>
+                            <div class="input-group"><label>المسمى الوظيفي</label><input type="text" id="jobTitle"></div>
+                            
+                            <div class="section-header">الماليات</div>
+                            <div class="input-group"><label>اليومية (ج.م)</label><input type="number" id="dailyWage"></div>
+                            <div class="input-group"><label>حوافز / إضافي</label><input type="number" id="bonus"></div>
+                            <div class="input-group"><label>السلف</label><input type="number" id="loans"></div>
+                            <div class="input-group"><label>تقسيط السلفة (شهور)</label><input type="number" id="loanMonths" value="1"></div>
+                            <div class="input-group"><label>خصم تأمينات</label><input type="number" id="insurance"></div>
+                            <div class="input-group"><label>جزاءات</label><input type="number" id="generalDeduct"></div>
+                        </div>
+
+                        <!-- جدول البصمة -->
+                        <div style="margin-top:20px">
+                            <div style="display:flex; justify-content:space-between; align-items:center">
+                                <h4 style="margin:0">سجل الحضور</h4>
+                                <button class="btn-secondary" onclick="loadAttendanceFromDB()" style="padding:5px 10px; font-size:0.8rem">
+                                    <i class="fa-solid fa-cloud-download-alt"></i> جلب البصمة
+                                </button>
+                            </div>
+                            <div class="table-wrap" style="max-height:300px; overflow-y:auto">
+                                <table class="attendance-table" id="attTable">
+                                    <thead><tr><th>اليوم</th><th>دخول</th><th>خروج</th><th>ساعات</th></tr></thead>
+                                    <tbody></tbody>
+                                </table>
+                            </div>
+                        </div>
+
+                        <div style="margin-top:25px">
+                            <button class="btn-save" onclick="saveEmployee()">
+                                <i class="fa-solid fa-save"></i> حفظ في قاعدة البيانات
+                            </button>
                         </div>
                     </div>
+                </div>
+            </div>
 
-                    <div style="margin-top:25px">
-                        <button class="btn-save" onclick="saveEmployee()">
-                            <i class="fa-solid fa-save"></i> حفظ البيانات (Cloud)
+            <!-- === قسم معاينة الطباعة === -->
+            <div id="printView" style="display:none">
+                <div class="card no-print" style="padding:30px; text-align:center">
+                    <h2 style="color:var(--primary); margin-bottom:10px">طباعة الرواتب</h2>
+                    <div style="display:flex; justify-content:center; gap:20px">
+                        <button class="btn-primary" onclick="window.print()">
+                            <i class="fa-solid fa-print"></i> طباعة
                         </button>
+                        <button class="btn-secondary" onclick="switchView('main')">عودة</button>
                     </div>
                 </div>
+                <div id="printPreviewContainer" class="preview-wrapper"></div>
             </div>
-        </div>
 
-        <!-- === قسم الطباعة === -->
-        <div id="printView" style="display:none">
-            <div class="card no-print" style="padding:30px; text-align:center">
-                <h2 style="color:var(--primary); margin-bottom:10px">طباعة الرواتب</h2>
-                <div style="display:flex; justify-content:center; gap:20px">
-                    <button class="btn-primary" onclick="window.print()"><i class="fa-solid fa-print"></i> طباعة</button>
-                    <button class="btn-secondary" onclick="switchView('main')">عودة</button>
-                </div>
-            </div>
-            <div id="printPreviewContainer" class="preview-wrapper"></div>
-        </div>
+            <!-- === قسم الإعدادات === -->
+            <div id="settingsView" style="display:none">
+                <div class="card" style="padding:30px; max-width:800px; margin:0 auto">
+                    
+                    <h3 style="color:var(--primary); border-bottom:1px solid #eee; padding-bottom:10px; margin-bottom:20px">
+                        <i class="fa-solid fa-users-cog"></i> إنشاء حساب موظف جديد
+                    </h3>
+                    <div style="background:#f0f9ff; padding:20px; border-radius:8px; border:1px solid #bae6fd">
+                        <p style="margin-bottom:10px; font-size:0.9rem">لإضافة مدير جديد للنظام، أنشئ بريد إلكتروني وكلمة مرور.</p>
+                        <div style="display:grid; gap:10px; grid-template-columns: 1fr 1fr auto;">
+                            <input type="email" id="newUserEmail" placeholder="البريد الإلكتروني الجديد">
+                            <input type="password" id="newUserPass" placeholder="كلمة المرور">
+                            <button class="btn-primary" onclick="createNewUser()">إنشاء الحساب</button>
+                        </div>
+                        <p style="font-size:0.8rem; color:red; margin-top:10px">تنبيه: سيتم تسجيل دخولك بالحساب الجديد فور إنشائه.</p>
+                    </div>
 
-        <!-- === قسم الإعدادات === -->
-        <div id="settingsView" style="display:none">
-            <div class="card" style="padding:30px; max-width:800px; margin:0 auto">
-                <h3 style="margin-bottom:20px; border-bottom:1px solid #eee; padding-bottom:10px">إدارة الفروع</h3>
-                <div style="display:flex; gap:10px; margin-bottom:20px">
-                    <input type="text" id="newBranchName" placeholder="اسم الفرع الجديد..." style="flex:1;">
-                    <button class="btn-primary" onclick="addBranch()">إضافة</button>
+                    <h3 style="margin-top:40px; border-bottom:1px solid #eee; padding-bottom:10px">إدارة الفروع</h3>
+                    <div style="display:flex; gap:10px; margin-bottom:20px; margin-top:15px">
+                        <input type="text" id="newBranchName" placeholder="اسم الفرع الجديد..." style="flex:1;">
+                        <button class="btn-primary" onclick="addBranch()">إضافة</button>
+                    </div>
+                    <ul id="branchesListDisplay" style="list-style:none;"></ul>
+
                 </div>
-                <ul id="branchesListDisplay" style="list-style:none; margin-bottom:30px; border:1px solid #eee; border-radius:8px;"></ul>
             </div>
         </div>
     </div>
 
-<script type="module">
-    // استيراد Firebase (بدون Auth)
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
-    import { 
-        getFirestore, collection, doc, setDoc, getDoc, updateDoc, deleteDoc, onSnapshot, query 
-    } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
-
+<script>
+    // ==========================================
+    // 1. إعدادات Firebase الخاصة بك
+    // ==========================================
     const firebaseConfig = {
       apiKey: "AIzaSyCZj1ur4bW6YPkWS1JCXLruTZXlZG1pHhY",
       authDomain: "fingerprint-sheet.firebaseapp.com",
@@ -221,55 +284,96 @@ html
       measurementId: "G-3DNFBZB0WJ"
     };
 
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
+    // تهيئة Firebase
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    const auth = firebase.auth();
 
-    let employees = []; 
-    let branches = ['الفرع الرئيسي']; 
-    let attendanceRecords = {};
+    // ==========================================
+    // 2. المتغيرات العامة
+    // ==========================================
+    let localEmployees = []; 
+    let branches = ['الفرع الرئيسي'];
+    let attendanceBuffer = {}; 
+    
+    // ==========================================
+    // 3. إدارة تسجيل الدخول والمستخدمين
+    // ==========================================
+    auth.onAuthStateChanged(user => {
+        if (user) {
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('appContainer').style.display = 'flex';
+            document.getElementById('currentUserDisplay').innerHTML = `${user.email}`;
+            loadInitialData(); 
+        } else {
+            document.getElementById('loginScreen').style.display = 'flex';
+            document.getElementById('appContainer').style.display = 'none';
+        }
+    });
 
-    // بدء التطبيق مباشرة
-    initApp();
+    function loginUser() {
+        const email = document.getElementById('loginEmail').value;
+        const pass = document.getElementById('loginPass').value;
+        auth.signInWithEmailAndPassword(email, pass)
+            .catch(error => {
+                document.getElementById('loginError').style.display = 'block';
+                let msg = "بيانات الدخول غير صحيحة";
+                if(error.code === 'auth/user-not-found') msg = "هذا المستخدم غير موجود";
+                if(error.code === 'auth/wrong-password') msg = "كلمة المرور خاطئة";
+                document.getElementById('loginError').innerText = msg;
+            });
+    }
 
-    function initApp() {
-        // فروع
-        const branchesRef = doc(db, "config", "branches");
-        onSnapshot(branchesRef, (docSnap) => {
-            if (docSnap.exists()) {
-                branches = docSnap.data().list || ['الفرع الرئيسي'];
-            } else {
-                setDoc(branchesRef, { list: ['الفرع الرئيسي'] });
-            }
+    function logoutUser() {
+        auth.signOut();
+    }
+
+    function createNewUser() {
+        const email = document.getElementById('newUserEmail').value;
+        const pass = document.getElementById('newUserPass').value;
+        if(!email || !pass) return alert("يرجى إدخال البيانات");
+        
+        auth.createUserWithEmailAndPassword(email, pass)
+            .then((userCredential) => {
+                alert("تم إنشاء الحساب بنجاح!");
+                document.getElementById('newUserEmail').value = '';
+                document.getElementById('newUserPass').value = '';
+            })
+            .catch((error) => {
+                alert("خطأ: " + error.message);
+            });
+    }
+
+    // ==========================================
+    // 4. تحميل البيانات من Firestore
+    // ==========================================
+    function loadInitialData() {
+        // 1. الفروع
+        db.collection('branches').onSnapshot(snapshot => {
+            branches = [];
+            snapshot.forEach(doc => branches.push(doc.data().name));
+            if(branches.length === 0) branches = ['الفرع الرئيسي'];
             updateUI();
         });
 
-        // موظفين
-        const q = query(collection(db, "employees"));
-        onSnapshot(q, (querySnapshot) => {
-            employees = [];
-            querySnapshot.forEach((doc) => {
-                employees.push(doc.data());
+        // 2. الموظفين
+        db.collection('employees').onSnapshot(snapshot => {
+            localEmployees = [];
+            snapshot.forEach(doc => {
+                localEmployees.push(doc.data());
             });
             renderEmployees();
-        });
-
-        // بصمات
-        const attQ = query(collection(db, "attendance_records"));
-        onSnapshot(attQ, (querySnapshot) => {
-            attendanceRecords = {};
-            querySnapshot.forEach((doc) => {
-                attendanceRecords[doc.id] = doc.data();
-            });
         });
 
         const d = new Date();
         document.getElementById('monthSelect').value = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
         initAttTable();
-        setupExcel();
     }
 
-    // دوال الواجهة
-    window.switchView = (view) => {
+    // ==========================================
+    // 5. وظائف الواجهة
+    // ==========================================
+    function switchView(view) {
         document.getElementById('mainView').style.display = view === 'main' ? 'block' : 'none';
         document.getElementById('printView').style.display = view === 'print' ? 'block' : 'none';
         document.getElementById('settingsView').style.display = view === 'settings' ? 'block' : 'none';
@@ -283,7 +387,7 @@ html
         if(view === 'settings') {
             document.querySelector('.sidebar li:nth-child(3)').classList.add('active');
         }
-    };
+    }
 
     function updateUI() {
         const sel = document.getElementById('branchSelect');
@@ -295,110 +399,53 @@ html
         const list = document.getElementById('branchesListDisplay');
         list.innerHTML = '';
         branches.forEach(b => {
-            list.innerHTML += `<li style="padding:12px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center">
-                <span>${b}</span> <button class="btn-danger" style="padding:5px 10px; font-size:0.8rem" onclick="delBranch('${b}')"><i class="fa-solid fa-trash"></i></button>
+            list.innerHTML += `<li style="padding:10px; border-bottom:1px solid #eee; display:flex; justify-content:space-between">
+                <span>${b}</span> <button class="btn-danger" style="font-size:0.7rem; padding:4px 8px" onclick="delBranch('${b}')"><i class="fa-solid fa-trash"></i></button>
             </li>`;
         });
         renderEmployees();
     }
 
-    window.renderEmployees = () => {
+    // ==========================================
+    // 6. إدارة الموظفين
+    // ==========================================
+    function renderEmployees() {
         const branch = document.getElementById('branchSelect').value;
         const month = document.getElementById('monthSelect').value;
         const list = document.getElementById('employeesList');
         list.innerHTML = '';
 
-        const uniqueIds = new Set();
-        const branchEmployees = [];
-
-        employees.forEach(e => {
-            if (e.branch === branch) {
-                if(!uniqueIds.has(e.id)) {
-                    uniqueIds.add(e.id);
-                    branchEmployees.push({ id: e.id, name: e.name });
-                }
-            }
-        });
-
-        if(branchEmployees.length === 0) {
-            list.innerHTML = '<li style="text-align:center; color:#999; display:block">لا يوجد بيانات لهذا الفرع.</li>';
-            return;
+        const filtered = localEmployees.filter(e => e.branch === branch && e.month === month);
+        
+        if(filtered.length === 0) {
+            list.innerHTML = '<li style="text-align:center; color:#999; padding:20px">لا يوجد بيانات لهذا الشهر.<br>أضف موظف جديد.</li>';
         }
 
-        branchEmployees.sort((a,b) => a.name.localeCompare(b.name));
+        filtered.sort((a,b) => a.name.localeCompare(b.name));
 
-        branchEmployees.forEach(masterEmp => {
-            const docKey = `${masterEmp.id}_${month}`;
-            const hasRecord = employees.some(e => e.docKey === docKey && e.branch === branch);
-            
+        filtered.forEach(emp => {
             const li = document.createElement('li');
             li.innerHTML = `
-                <div>
-                    <span style="font-weight:bold">${masterEmp.name}</span>
-                    <br><span style="font-size:0.8rem; color:#666">كود: ${masterEmp.id}</span>
-                </div>
-                <div class="status-dot ${hasRecord ? 'status-active' : 'status-inactive'}"></div>
+                <div><span style="font-weight:bold">${emp.name}</span> <br><small>ID: ${emp.id}</small></div>
+                <div class="status-dot status-active"></div>
             `;
-            li.onclick = () => loadEmpForm(masterEmp.id);
-            if(document.getElementById('empId').value == masterEmp.id) li.classList.add('selected');
+            li.onclick = () => loadEmpForm(emp);
+            if(document.getElementById('empId').value == emp.id) li.classList.add('selected');
             list.appendChild(li);
         });
-    };
+    }
 
-    window.resetForm = () => {
+    function resetForm() {
         document.querySelectorAll('.form-grid input').forEach(i => i.value = '');
         document.getElementById('loanMonths').value = '1';
         document.getElementById('formTitle').innerText = 'موظف جديد';
         document.getElementById('empId').disabled = false;
-        document.getElementById('btnDelete').style.display = 'none';
+        document.getElementById('btnDeleteRecord').style.display = 'none';
         initAttTable();
         document.querySelectorAll('.emp-list li').forEach(li => li.classList.remove('selected'));
-    };
+    }
 
-    window.loadEmpForm = (id) => {
-        const branch = document.getElementById('branchSelect').value;
-        const month = document.getElementById('monthSelect').value;
-        const docKey = `${id}_${month}`;
-        
-        let emp = employees.find(e => e.docKey === docKey && e.branch === branch);
-        
-        if (emp) {
-            fillForm(emp);
-            document.getElementById('formTitle').innerText = 'تعديل: ' + emp.name;
-            document.getElementById('btnDelete').style.display = 'inline-flex';
-        } else {
-            const prevRecords = employees.filter(e => e.id == id);
-            if (prevRecords.length > 0) {
-                const lastRec = prevRecords[prevRecords.length - 1];
-                document.getElementById('empName').value = lastRec.name;
-                document.getElementById('empId').value = lastRec.id;
-                document.getElementById('jobTitle').value = lastRec.job;
-                document.getElementById('dailyWage').value = lastRec.financials.wage;
-                document.getElementById('insurance').value = lastRec.financials.insurance || 0;
-                
-                document.getElementById('bonus').value = '';
-                document.getElementById('loans').value = '';
-                document.getElementById('withdraw10').value = '';
-                document.getElementById('withdraw20').value = '';
-                document.getElementById('generalDeduct').value = '';
-                
-                document.getElementById('formTitle').innerText = 'تسجيل شهر جديد: ' + lastRec.name;
-                document.getElementById('btnDelete').style.display = 'none';
-                initAttTable();
-            }
-        }
-        
-        document.getElementById('empId').disabled = true;
-        setTimeout(() => {
-            document.querySelectorAll('.emp-list li').forEach(li => li.classList.remove('selected'));
-            const listItems = document.querySelectorAll('.emp-list li');
-            listItems.forEach(li => {
-                if(li.innerText.includes(id)) li.classList.add('selected');
-            });
-        }, 50);
-    };
-
-    function fillForm(emp) {
+    function loadEmpForm(emp) {
         document.getElementById('empName').value = emp.name;
         document.getElementById('empId').value = emp.id;
         document.getElementById('jobTitle').value = emp.job;
@@ -407,9 +454,11 @@ html
         document.getElementById('loans').value = emp.financials.loans;
         document.getElementById('loanMonths').value = emp.financials.loanMonths;
         document.getElementById('insurance').value = emp.financials.insurance;
-        document.getElementById('withdraw10').value = emp.financials.withdraw10;
-        document.getElementById('withdraw20').value = emp.financials.withdraw20;
         document.getElementById('generalDeduct').value = emp.financials.deduct;
+
+        document.getElementById('formTitle').innerText = 'تعديل: ' + emp.name;
+        document.getElementById('empId').disabled = true; 
+        document.getElementById('btnDeleteRecord').style.display = 'block';
 
         initAttTable();
         if(emp.att) {
@@ -424,18 +473,20 @@ html
         }
     }
 
-    window.saveEmployee = async () => {
+    function saveEmployee() {
         const id = document.getElementById('empId').value.trim();
-        const name = document.getElementById('empName').value.trim();
         const branch = document.getElementById('branchSelect').value;
         const month = document.getElementById('monthSelect').value;
 
-        if(!id || !name) return alert('يرجى إدخال الاسم ورقم البصمة');
+        if(!id) return alert('أدخل رقم البصمة');
 
-        const docKey = `${id}_${month}`;
+        const docId = `${branch}_${month}_${id}`; 
 
         const empData = {
-            docKey, id, name, branch, month,
+            id, 
+            name: document.getElementById('empName').value.trim(),
+            branch, 
+            month,
             job: document.getElementById('jobTitle').value,
             financials: {
                 wage: Number(document.getElementById('dailyWage').value),
@@ -443,52 +494,35 @@ html
                 loans: Number(document.getElementById('loans').value),
                 loanMonths: Number(document.getElementById('loanMonths').value) || 1,
                 insurance: Number(document.getElementById('insurance').value),
-                withdraw10: Number(document.getElementById('withdraw10').value),
-                withdraw20: Number(document.getElementById('withdraw20').value),
                 deduct: Number(document.getElementById('generalDeduct').value),
             },
-            att: getAttTableData()
+            att: getAttTableData(),
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         };
 
-        try {
-            await setDoc(doc(db, "employees", docKey), empData);
-            alert('تم الحفظ بنجاح على السيرفر');
-        } catch (e) {
-            alert("خطأ في الحفظ: " + e.message);
-        }
-    };
+        db.collection('employees').doc(docId).set(empData)
+            .then(() => alert('تم الحفظ بنجاح'))
+            .catch(err => alert("خطأ في الحفظ: " + err.message));
+    }
 
-    window.deleteEmployeeRecord = async () => {
+    function deleteEmployeeRecord() {
+        if(!confirm('هل أنت متأكد من حذف هذا السجل؟')) return;
         const id = document.getElementById('empId').value;
+        const branch = document.getElementById('branchSelect').value;
         const month = document.getElementById('monthSelect').value;
-        if(!confirm('هل أنت متأكد من حذف هذا السجل نهائياً؟')) return;
-        
-        const docKey = `${id}_${month}`;
-        try {
-            await deleteDoc(doc(db, "employees", docKey));
-            resetForm();
-            alert("تم الحذف.");
-        } catch(e) {
-            alert("خطأ: " + e.message);
-        }
-    };
+        const docId = `${branch}_${month}_${id}`;
 
-    window.addBranch = async () => {
-        const name = document.getElementById('newBranchName').value;
-        if(name && !branches.includes(name)) {
-            const newList = [...branches, name];
-            await updateDoc(doc(db, "config", "branches"), { list: newList });
-            document.getElementById('newBranchName').value = '';
-        }
-    };
+        db.collection('employees').doc(docId).delete()
+            .then(() => {
+                alert('تم الحذف');
+                resetForm();
+            })
+            .catch(err => alert(err.message));
+    }
 
-    window.delBranch = async (name) => {
-        if(confirm('حذف الفرع؟')) {
-            const newList = branches.filter(b => b !== name);
-            await updateDoc(doc(db, "config", "branches"), { list: newList });
-        }
-    };
-
+    // ==========================================
+    // 7. التعامل مع البصمة
+    // ==========================================
     function initAttTable() {
         const tbody = document.querySelector('#attTable tbody');
         tbody.innerHTML = '';
@@ -502,7 +536,7 @@ html
         }
     }
 
-    window.calcRow = (tr) => {
+    function calcRow(tr) {
         const i = tr.querySelector('.in').value;
         const o = tr.querySelector('.out').value;
         const hCell = tr.querySelector('.hours');
@@ -527,99 +561,79 @@ html
         return data;
     }
 
-    function ExcelDateToJSDate(serial) {
-        var utc_days  = Math.floor(serial - 25569);
-        var utc_value = utc_days * 86400;
-        var date_info = new Date(utc_value * 1000);
-        return date_info;
-    }
+    document.getElementById('excelInput').addEventListener('change', function(e) {
+        const file = e.target.files[0];
+        if(!file) return;
+        const reader = new FileReader();
+        reader.onload = function(evt) {
+            const workbook = XLSX.read(evt.target.result, {type:'array'});
+            const sheet = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], {header:1});
+            
+            attendanceBuffer = {}; 
+            let count = 0;
 
-    function setupExcel() {
-        document.getElementById('excelInput').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if(!file) return;
+            sheet.forEach((row, idx) => {
+                if(idx === 0) return;
+                let id = row[2]; 
+                let dateRaw = row[3]; 
 
-            const reader = new FileReader();
-            reader.onload = async function(evt) {
-                const workbook = XLSX.read(evt.target.result, {type:'array'});
-                const sheet = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], {header:1, raw:true});
-                
-                let batchData = {};
-                sheet.forEach((row, idx) => {
-                    if(idx === 0) return;
-                    let id = row[2];
-                    let rawDate = row[3];
-
-                    if(id && rawDate) {
-                        id = id.toString().trim();
-                        let dateObj = typeof rawDate === 'number' ? ExcelDateToJSDate(rawDate) : new Date(rawDate);
-
-                        if(!isNaN(dateObj)) {
-                            const monthKey = `${dateObj.getFullYear()}-${String(dateObj.getMonth()+1).padStart(2,'0')}`;
-                            const dayKey = dateObj.getDate();
-                            const timeStr = dateObj.toTimeString().split(' ')[0].substring(0,5);
-
-                            if(!batchData[id]) batchData[id] = {};
-                            if(!batchData[id][monthKey]) batchData[id][monthKey] = {};
-                            if(!batchData[id][monthKey][dayKey]) batchData[id][monthKey][dayKey] = [];
-                            
-                            if(!batchData[id][monthKey][dayKey].includes(timeStr)) {
-                                batchData[id][monthKey][dayKey].push(timeStr);
-                            }
-                        }
+                if(id && dateRaw) {
+                    id = id.toString().trim();
+                    let dateObj = typeof dateRaw === 'number' ? new Date((dateRaw - 25569)*86400*1000) : new Date(dateRaw);
+                    
+                    if(!isNaN(dateObj)) {
+                        const monthKey = `${dateObj.getFullYear()}-${String(dateObj.getMonth()+1).padStart(2,'0')}`;
+                        const day = dateObj.getDate();
+                        const time = `${String(dateObj.getHours()).padStart(2,'0')}:${String(dateObj.getMinutes()).padStart(2,'0')}`;
+                        
+                        const key = `${id}_${monthKey}`;
+                        if(!attendanceBuffer[key]) attendanceBuffer[key] = {};
+                        if(!attendanceBuffer[key][day]) attendanceBuffer[key][day] = [];
+                        attendanceBuffer[key][day].push(time);
+                        count++;
                     }
-                });
-
-                let promises = [];
-                for (const [id, months] of Object.entries(batchData)) {
-                    const docRef = doc(db, "attendance_records", id);
-                    promises.push(setDoc(docRef, months, { merge: true }));
                 }
+            });
+            alert(`تم استيراد ${count} بصمة. اختر موظف ثم اضغط "جلب البصمة" لتطبيقها.`);
+        };
+        reader.readAsArrayBuffer(file);
+        e.target.value = '';
+    });
 
-                try {
-                    await Promise.all(promises);
-                    alert("تم استيراد ورفع البصمة إلى السيرفر بنجاح!");
-                    if(document.getElementById('empId').value) loadAttendanceFromDB();
-                } catch(err) {
-                    alert("حدث خطأ أثناء الرفع: " + err.message);
-                }
-            };
-            reader.readAsArrayBuffer(file);
-            e.target.value = '';
-        });
-    }
-
-    window.loadAttendanceFromDB = () => {
+    function loadAttendanceFromDB() {
         const id = document.getElementById('empId').value;
         const month = document.getElementById('monthSelect').value;
+        const key = `${id}_${month}`;
 
-        if(!id || !attendanceRecords[id] || !attendanceRecords[id][month]) {
-            return alert('لا توجد بصمات محفوظة لهذا الكود في هذا الشهر.');
-        }
-
-        const monthData = attendanceRecords[id][month];
-        Object.entries(monthData).forEach(([day, times]) => {
-            const sortedTimes = times.sort();
-            const tr = document.querySelector(`tr[data-day="${day}"]`);
-            if(tr && sortedTimes.length > 0) {
-                tr.querySelector('.in').value = sortedTimes[0];
-                if(sortedTimes.length > 1) {
-                    tr.querySelector('.out').value = sortedTimes[sortedTimes.length - 1];
+        if(attendanceBuffer[key]) {
+            const days = attendanceBuffer[key];
+            Object.keys(days).forEach(day => {
+                const times = days[day].sort();
+                const tr = document.querySelector(`tr[data-day="${day}"]`);
+                if(tr && times.length > 0) {
+                    tr.querySelector('.in').value = times[0];
+                    if(times.length > 1) tr.querySelector('.out').value = times[times.length-1];
+                    calcRow(tr);
                 }
-                calcRow(tr);
-            }
-        });
-    };
+            });
+            alert("تم تطبيق بيانات الإكسيل.");
+        } else {
+            alert("لا توجد بيانات في ملف الإكسيل لهذا الكود والشهر.");
+        }
+    }
 
-    window.preparePrint = () => {
+    // ==========================================
+    // 8. الطباعة
+    // ==========================================
+    function preparePrint() {
         const container = document.getElementById('printPreviewContainer');
         const branch = document.getElementById('branchSelect').value;
         const month = document.getElementById('monthSelect').value;
         
-        const filtered = employees.filter(e => e.branch === branch && e.month === month);
+        const filtered = localEmployees.filter(e => e.branch === branch && e.month === month);
         
         if(filtered.length === 0) {
-            container.innerHTML = '<p style="grid-column:1/-1; text-align:center">لا توجد رواتب مسجلة لهذا الشهر والفرع.</p>';
+            container.innerHTML = '<p style="grid-column:1/-1; text-align:center">لا توجد بيانات.</p>';
             return;
         }
 
@@ -631,53 +645,56 @@ html
                 <div class="card-header">${emp.name}</div>
                 <div class="card-body">
                     <table class="card-table">
-                        <tr> <td class="value-col">${emp.branch}</td> <td class="label-col">الفرع</td> </tr>
-                        <tr> <td class="value-col">${emp.month}</td> <td class="label-col">الشهر</td> </tr>
                         <tr> <td class="value-col">${c.workDays}</td> <td class="label-col">أيام العمل</td> </tr>
-                        <tr> <td class="value-col">${c.overtimeHours.toFixed(2)}</td> <td class="label-col">ساعات إضافي</td> </tr>
-                        <tr> <td class="value-col">${c.delayHours.toFixed(2)}</td> <td class="label-col">ساعات تأخير</td> </tr>
                         <tr> <td class="value-col">${c.basicSalary.toFixed(2)}</td> <td class="label-col">الأساسي</td> </tr>
-                        <tr> <td class="value-col" style="color:green">${emp.financials.bonus.toFixed(2)}</td> <td class="label-col">إضافي مالي</td> </tr>
-                        <tr> <td class="value-col" style="color:red">${c.delayValue.toFixed(2)}</td> <td class="label-col">خصم تأخير</td> </tr>
-                        <tr> <td class="value-col" style="color:red">${c.loanDeduct.toFixed(2)}</td> <td class="label-col">قسط سلفة</td> </tr>
-                        <tr> <td class="value-col" style="color:red">${emp.financials.insurance.toFixed(2)}</td> <td class="label-col">تأمينات</td> </tr>
-                        <tr> <td class="value-col" style="color:red">${(emp.financials.withdraw10 + emp.financials.withdraw20 + emp.financials.deduct).toFixed(2)}</td> <td class="label-col">خصومات أخرى</td> </tr>
-                        <tr class="net-row"> 
-                            <td class="value-col">${c.net.toFixed(2)}</td> 
-                            <td class="label-col">الصافي</td> 
+                        <tr> <td class="value-col" style="color:green">${emp.financials.bonus}</td> <td class="label-col">إضافي</td> </tr>
+                        <tr> <td class="value-col" style="color:red">${c.totalDeduct.toFixed(2)}</td> <td class="label-col">خصومات</td> </tr>
+                        <tr style="background:#ecfdf5; font-size:1.1rem; border-top:2px solid #000"> 
+                            <td class="value-col">${c.net.toFixed(2)}</td> <td class="label-col">الصافي</td> 
                         </tr>
                     </table>
                 </div>
             </div>`;
         });
         container.innerHTML = html;
-    };
+    }
 
     function calculateSalary(emp) {
-        let workDays = 0, overtimeHours = 0, delayHours = 0;
+        let workDays = 0;
         if(emp.att) {
-            Object.values(emp.att).forEach(v => {
-                if(v.in && v.out) {
-                    workDays++;
-                    let d1 = new Date("2000-01-01T"+v.in);
-                    let d2 = new Date("2000-01-01T"+v.out);
-                    let hours = (d2 - d1) / 36e5;
-                    if(hours < 0) hours += 24;
-                    if(hours > 8) overtimeHours += (hours - 8);
-                    if(hours < 8) delayHours += (8 - hours);
-                }
-            });
+            Object.values(emp.att).forEach(v => { if(v.in && v.out) workDays++; });
         }
         const wage = emp.financials.wage || 0;
         const basicSalary = workDays * wage;
-        const hourlyRate = wage / 8;
-        const delayValue = delayHours * hourlyRate;
         const loanDeduct = (emp.financials.loans || 0) / (emp.financials.loanMonths || 1);
-        const otherDeducts = (emp.financials.insurance || 0) + (emp.financials.deduct || 0) + (emp.financials.withdraw10 || 0) + (emp.financials.withdraw20 || 0);
-        const totalDeductions = delayValue + loanDeduct + otherDeducts;
-        const net = (basicSalary + (emp.financials.bonus || 0)) - totalDeductions;
-        return { workDays, basicSalary, overtimeHours, delayHours, delayValue, loanDeduct, net };
+        const totalDeduct = loanDeduct + (emp.financials.insurance || 0) + (emp.financials.deduct || 0);
+        const net = (basicSalary + (emp.financials.bonus || 0)) - totalDeduct;
+        return { workDays, basicSalary, totalDeduct, net };
     }
+
+    // ==========================================
+    // 9. إدارة الفروع
+    // ==========================================
+    function addBranch() {
+        const name = document.getElementById('newBranchName').value;
+        if(name && !branches.includes(name)) {
+            db.collection('branches').add({ name: name })
+                .then(() => {
+                    alert("تم إضافة الفرع");
+                    document.getElementById('newBranchName').value = '';
+                });
+        }
+    }
+
+    function delBranch(name) {
+        if(confirm("حذف هذا الفرع؟")) {
+            db.collection('branches').where('name', '==', name).get()
+                .then(snapshot => {
+                    snapshot.forEach(doc => doc.ref.delete());
+                });
+        }
+    }
+
 </script>
 </body>
 </html>
