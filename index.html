@@ -4,11 +4,15 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>نظام الرواتب - Fingerprint Sheet</title>
+    
+    <!-- الخطوط والأيقونات -->
     <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- مكتبة التعامل مع Excel -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 
-    <!-- === مكتبات Firebase === -->
+    <!-- === مكتبات Firebase (الإصدار التاسع المتوافق) === -->
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth-compat.js"></script>
@@ -37,22 +41,24 @@
             background: white; padding: 40px; border-radius: 15px; width: 90%; max-width: 400px;
             text-align: center; box-shadow: 0 10px 25px rgba(0,0,0,0.2);
         }
-        .login-box h2 { color: var(--primary); margin-bottom: 20px; }
+        .login-box h2 { color: var(--primary); margin-bottom: 20px; font-weight: 800; }
         .login-box input { width: 100%; padding: 12px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 8px; font-family: inherit; }
-        .login-box button { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 1rem; }
+        .login-box button { width: 100%; padding: 12px; background: var(--primary); color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 1rem; transition: 0.3s; }
         .login-box button:hover { background: #172554; }
-        .error-msg { color: red; font-size: 0.9rem; margin-top: 10px; display: none; }
+        .error-msg { color: #dc2626; font-size: 0.9rem; margin-top: 15px; display: none; font-weight: bold; background: #fee2e2; padding: 10px; border-radius: 5px; }
 
         /* === النظام الرئيسي === */
         #appContainer { display: none; display: flex; width: 100%; min-height: 100vh; }
         
+        /* القائمة الجانبية */
         .sidebar { width: 260px; background: #0f172a; color: white; height: 100vh; position: fixed; right: 0; top: 0; display: flex; flex-direction: column; z-index: 1000; }
-        .sidebar .brand { padding: 25px; border-bottom: 1px solid rgba(255,255,255,0.1); font-size: 1.2rem; display: flex; align-items: center; gap: 10px; }
+        .sidebar .brand { padding: 25px; border-bottom: 1px solid rgba(255,255,255,0.1); font-size: 1.2rem; display: flex; align-items: center; gap: 10px; font-weight: 700; }
         .sidebar nav { padding: 10px; flex-grow: 1; }
         .sidebar nav li { padding: 12px 20px; cursor: pointer; color: #94a3b8; display: flex; align-items: center; gap: 12px; transition: 0.2s; border-radius: 8px; margin-bottom: 5px; font-weight: 500; }
         .sidebar nav li:hover, .sidebar nav li.active { background: var(--primary-light); color: white; }
-        .user-info { padding: 15px; background: rgba(255,255,255,0.05); font-size: 0.85rem; color: #ccc; text-align: center; border-top: 1px solid rgba(255,255,255,0.1); }
+        .user-info { padding: 20px; background: rgba(0,0,0,0.2); font-size: 0.85rem; color: #e2e8f0; text-align: center; border-top: 1px solid rgba(255,255,255,0.1); }
 
+        /* المحتوى */
         .main-content { margin-right: 260px; width: calc(100% - 260px); padding: 30px; }
         .card { background: white; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border: 1px solid var(--border); overflow: hidden; margin-bottom: 25px; }
         
@@ -60,13 +66,15 @@
         .input-group label { display: block; font-size: 0.85rem; font-weight: bold; margin-bottom: 6px; color: #64748b; }
         .input-group input, .input-group select { padding: 10px; border: 1px solid var(--border); border-radius: 8px; min-width: 160px; font-family: inherit; font-size: 0.95rem; }
         
+        /* الأزرار */
         button { border: none; padding: 10px 18px; border-radius: 8px; cursor: pointer; font-family: inherit; font-weight: bold; display: flex; gap: 8px; align-items: center; transition: 0.2s; font-size: 0.9rem; }
-        .btn-primary { background: var(--primary); color: white; }
-        .btn-secondary { background: white; border: 1px solid var(--border); color: #334155; }
-        .btn-danger { background: #fee2e2; color: #991b1b; }
-        .btn-success { background: #dcfce7; color: #166534; }
-        .btn-save { background: #0f172a; color: white; width: 100%; justify-content: center; padding: 12px; font-size: 1rem; }
+        .btn-primary { background: var(--primary); color: white; } .btn-primary:hover { background: #1e40af; }
+        .btn-secondary { background: white; border: 1px solid var(--border); color: #334155; } .btn-secondary:hover { border-color: var(--primary); color: var(--primary); }
+        .btn-danger { background: #fee2e2; color: #991b1b; } .btn-danger:hover { background: #fecaca; }
+        .btn-success { background: #dcfce7; color: #166534; } .btn-success:hover { background: #bbf7d0; }
+        .btn-save { background: #0f172a; color: white; width: 100%; justify-content: center; padding: 12px; font-size: 1rem; } .btn-save:hover { background: #000; }
 
+        /* منطقة العمل */
         .workspace { display: grid; grid-template-columns: 280px 1fr; gap: 25px; align-items: start; }
         .emp-list { list-style: none; height: 600px; overflow-y: auto; padding: 10px; }
         .emp-list li { padding: 12px; border-bottom: 1px solid #f1f5f9; cursor: pointer; display: flex; justify-content: space-between; align-items:center; border-radius: 6px; margin-bottom: 4px; transition: 0.1s; }
@@ -74,15 +82,15 @@
         .emp-list li.selected { background: #eff6ff; color: var(--primary); border: 1px solid #bfdbfe; }
         .status-dot { width:8px; height:8px; border-radius:50%; display:inline-block; margin-left:5px; }
         .status-active { background-color: var(--success); }
-        .status-inactive { background-color: #cbd5e1; }
-
+        
+        /* النماذج والجداول */
         .form-container { padding: 25px; }
         .form-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; margin-bottom: 20px; }
         .section-header { grid-column: 1/-1; margin: 15px 0 10px 0; padding-bottom: 8px; border-bottom: 2px solid #f1f5f9; color: var(--primary); font-weight: bold; }
         
         .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 8px; margin-top: 10px; }
         .attendance-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
-        .attendance-table th { background: #f8fafc; padding: 10px; text-align: center; border-bottom: 1px solid var(--border); }
+        .attendance-table th { background: #f8fafc; padding: 10px; text-align: center; border-bottom: 1px solid var(--border); font-weight: bold; }
         .attendance-table td { padding: 5px; border-bottom: 1px solid var(--border); text-align: center; }
         .attendance-table input { width: 100%; border: none; text-align: center; background: transparent; padding: 5px; font-family: monospace; font-size: 1rem; }
         .attendance-table input:focus { background: #eff6ff; }
@@ -114,8 +122,8 @@
             <p style="margin-bottom:15px; color:#666">يرجى تسجيل الدخول للمتابعة</p>
             <input type="email" id="loginEmail" placeholder="البريد الإلكتروني">
             <input type="password" id="loginPass" placeholder="كلمة المرور">
-            <button onclick="loginUser()">دخول</button>
-            <div id="loginError" class="error-msg">بيانات الدخول غير صحيحة</div>
+            <button onclick="loginUser()">دخول للنظام</button>
+            <div id="loginError" class="error-msg"></div>
         </div>
     </div>
 
@@ -131,13 +139,12 @@
             <nav>
                 <li class="active" onclick="switchView('main')"><i class="fa-solid fa-users"></i> الموظفين</li>
                 <li onclick="switchView('print')"><i class="fa-solid fa-print"></i> طباعة الرواتب</li>
-                <li onclick="switchView('settings')"><i class="fa-solid fa-gear"></i> الإعدادات والمستخدمين</li>
+                <li onclick="switchView('settings')"><i class="fa-solid fa-gear"></i> الإعدادات</li>
             </nav>
             <div class="user-info">
-                <span id="currentUserDisplay">...</span>
-                <br>
-                <button class="btn-danger" onclick="logoutUser()" style="margin-top:10px; width:100%; justify-content:center; font-size:0.8rem">
-                    <i class="fa-solid fa-sign-out-alt"></i> خروج
+                <div style="margin-bottom:5px; font-weight:bold" id="currentUserDisplay">...</div>
+                <button class="btn-danger" onclick="logoutUser()" style="width:100%; justify-content:center; font-size:0.8rem; padding:6px">
+                    <i class="fa-solid fa-sign-out-alt"></i> تسجيل خروج
                 </button>
             </div>
         </div>
@@ -159,7 +166,7 @@
                         </div>
                         <div style="flex-grow: 1;"></div>
                         <button class="btn-success" onclick="document.getElementById('excelInput').click()">
-                            <i class="fa-solid fa-file-excel"></i> استيراد بصمة (Excel)
+                            <i class="fa-solid fa-file-excel"></i> استيراد (Excel)
                         </button>
                         <input type="file" id="excelInput" style="display:none" accept=".xlsx, .xls">
                         <button class="btn-secondary" onclick="resetForm()">
@@ -173,7 +180,7 @@
                     <div class="card no-print">
                         <div style="padding:15px; background:#f8fafc; border-bottom:1px solid #eee; font-weight:bold">
                             موظفي الفرع
-                            <span style="font-size:0.7rem; color:#666; display:block; font-weight:normal">جاري الاتصال بالسيرفر...</span>
+                            <span style="font-size:0.7rem; color:#666; display:block; font-weight:normal" id="statusMsg">جاري الاتصال...</span>
                         </div>
                         <ul class="emp-list" id="employeesList"></ul>
                     </div>
@@ -190,7 +197,7 @@
                         <div class="form-grid">
                             <div class="section-header">البيانات الأساسية</div>
                             <div class="input-group"><label>اسم الموظف</label><input type="text" id="empName"></div>
-                            <div class="input-group"><label>رقم البصمة (ID)</label><input type="number" id="empId" placeholder="هام جداً"></div>
+                            <div class="input-group"><label>رقم البصمة (ID)</label><input type="number" id="empId" placeholder="هام لربط البصمة"></div>
                             <div class="input-group"><label>المسمى الوظيفي</label><input type="text" id="jobTitle"></div>
                             
                             <div class="section-header">الماليات</div>
@@ -207,7 +214,7 @@
                             <div style="display:flex; justify-content:space-between; align-items:center">
                                 <h4 style="margin:0">سجل الحضور</h4>
                                 <button class="btn-secondary" onclick="loadAttendanceFromDB()" style="padding:5px 10px; font-size:0.8rem">
-                                    <i class="fa-solid fa-cloud-download-alt"></i> جلب البصمة
+                                    <i class="fa-solid fa-cloud-download-alt"></i> جلب بيانات البصمة
                                 </button>
                             </div>
                             <div class="table-wrap" style="max-height:300px; overflow-y:auto">
@@ -220,7 +227,7 @@
 
                         <div style="margin-top:25px">
                             <button class="btn-save" onclick="saveEmployee()">
-                                <i class="fa-solid fa-save"></i> حفظ في قاعدة البيانات
+                                <i class="fa-solid fa-save"></i> حفظ في قاعدة البيانات (Firestore)
                             </button>
                         </div>
                     </div>
@@ -233,7 +240,7 @@
                     <h2 style="color:var(--primary); margin-bottom:10px">طباعة الرواتب</h2>
                     <div style="display:flex; justify-content:center; gap:20px">
                         <button class="btn-primary" onclick="window.print()">
-                            <i class="fa-solid fa-print"></i> طباعة
+                            <i class="fa-solid fa-print"></i> طباعة المستند
                         </button>
                         <button class="btn-secondary" onclick="switchView('main')">عودة</button>
                     </div>
@@ -246,22 +253,21 @@
                 <div class="card" style="padding:30px; max-width:800px; margin:0 auto">
                     
                     <h3 style="color:var(--primary); border-bottom:1px solid #eee; padding-bottom:10px; margin-bottom:20px">
-                        <i class="fa-solid fa-users-cog"></i> إنشاء حساب موظف جديد
+                        <i class="fa-solid fa-user-plus"></i> إضافة مستخدم جديد للنظام
                     </h3>
                     <div style="background:#f0f9ff; padding:20px; border-radius:8px; border:1px solid #bae6fd">
-                        <p style="margin-bottom:10px; font-size:0.9rem">لإضافة مدير جديد للنظام، أنشئ بريد إلكتروني وكلمة مرور.</p>
+                        <p style="margin-bottom:10px; font-size:0.9rem">قم بإنشاء حساب لمدير آخر ليتمكن من الدخول للنظام.</p>
                         <div style="display:grid; gap:10px; grid-template-columns: 1fr 1fr auto;">
                             <input type="email" id="newUserEmail" placeholder="البريد الإلكتروني الجديد">
                             <input type="password" id="newUserPass" placeholder="كلمة المرور">
                             <button class="btn-primary" onclick="createNewUser()">إنشاء الحساب</button>
                         </div>
-                        <p style="font-size:0.8rem; color:red; margin-top:10px">تنبيه: سيتم تسجيل دخولك بالحساب الجديد فور إنشائه.</p>
                     </div>
 
                     <h3 style="margin-top:40px; border-bottom:1px solid #eee; padding-bottom:10px">إدارة الفروع</h3>
                     <div style="display:flex; gap:10px; margin-bottom:20px; margin-top:15px">
                         <input type="text" id="newBranchName" placeholder="اسم الفرع الجديد..." style="flex:1;">
-                        <button class="btn-primary" onclick="addBranch()">إضافة</button>
+                        <button class="btn-primary" onclick="addBranch()">إضافة فرع</button>
                     </div>
                     <ul id="branchesListDisplay" style="list-style:none;"></ul>
 
@@ -272,7 +278,7 @@
 
 <script>
     // ==========================================
-    // 1. إعدادات Firebase الخاصة بك
+    // 1. إعدادات Firebase (مشروعك الخاص)
     // ==========================================
     const firebaseConfig = {
       apiKey: "AIzaSyCZj1ur4bW6YPkWS1JCXLruTZXlZG1pHhY",
@@ -299,11 +305,13 @@
     // ==========================================
     // 3. إدارة تسجيل الدخول والمستخدمين
     // ==========================================
+    
+    // مراقب حالة الدخول
     auth.onAuthStateChanged(user => {
         if (user) {
             document.getElementById('loginScreen').style.display = 'none';
             document.getElementById('appContainer').style.display = 'flex';
-            document.getElementById('currentUserDisplay').innerHTML = `${user.email}`;
+            document.getElementById('currentUserDisplay').innerHTML = user.email;
             loadInitialData(); 
         } else {
             document.getElementById('loginScreen').style.display = 'flex';
@@ -314,13 +322,29 @@
     function loginUser() {
         const email = document.getElementById('loginEmail').value;
         const pass = document.getElementById('loginPass').value;
+        const errBox = document.getElementById('loginError');
+        
+        errBox.style.display = 'none';
+
+        if(!email || !pass) {
+            errBox.innerText = "يرجى كتابة البريد وكلمة المرور";
+            errBox.style.display = 'block';
+            return;
+        }
+
         auth.signInWithEmailAndPassword(email, pass)
             .catch(error => {
-                document.getElementById('loginError').style.display = 'block';
-                let msg = "بيانات الدخول غير صحيحة";
-                if(error.code === 'auth/user-not-found') msg = "هذا المستخدم غير موجود";
-                if(error.code === 'auth/wrong-password') msg = "كلمة المرور خاطئة";
-                document.getElementById('loginError').innerText = msg;
+                errBox.style.display = 'block';
+                console.log(error.code);
+                if(error.code === 'auth/user-not-found') {
+                    errBox.innerText = "هذا المستخدم غير موجود. تأكد من إنشاء المستخدم في Firebase Console أولاً.";
+                } else if(error.code === 'auth/wrong-password') {
+                    errBox.innerText = "كلمة المرور غير صحيحة.";
+                } else if(error.code === 'auth/invalid-email') {
+                    errBox.innerText = "صيغة البريد الإلكتروني خاطئة.";
+                } else {
+                    errBox.innerText = "خطأ: " + error.message;
+                }
             });
     }
 
@@ -331,11 +355,12 @@
     function createNewUser() {
         const email = document.getElementById('newUserEmail').value;
         const pass = document.getElementById('newUserPass').value;
-        if(!email || !pass) return alert("يرجى إدخال البيانات");
+        if(!email || !pass) return alert("يرجى إدخال البيانات كاملة");
         
+        // ملاحظة: عند إنشاء حساب جديد وأنت مسجل دخول، سيقوم Firebase بتسجيل دخولك بالحساب الجديد فوراً
         auth.createUserWithEmailAndPassword(email, pass)
             .then((userCredential) => {
-                alert("تم إنشاء الحساب بنجاح!");
+                alert("تم إنشاء الحساب بنجاح! سيتم تسجيل دخولك بالحساب الجديد الآن.");
                 document.getElementById('newUserEmail').value = '';
                 document.getElementById('newUserPass').value = '';
             })
@@ -348,6 +373,8 @@
     // 4. تحميل البيانات من Firestore
     // ==========================================
     function loadInitialData() {
+        document.getElementById('statusMsg').innerText = "جاري المزامنة...";
+        
         // 1. الفروع
         db.collection('branches').onSnapshot(snapshot => {
             branches = [];
@@ -363,6 +390,10 @@
                 localEmployees.push(doc.data());
             });
             renderEmployees();
+            document.getElementById('statusMsg').innerText = "متصل";
+        }, error => {
+            document.getElementById('statusMsg').innerText = "خطأ في الاتصال";
+            console.error(error);
         });
 
         const d = new Date();
@@ -399,7 +430,7 @@
         const list = document.getElementById('branchesListDisplay');
         list.innerHTML = '';
         branches.forEach(b => {
-            list.innerHTML += `<li style="padding:10px; border-bottom:1px solid #eee; display:flex; justify-content:space-between">
+            list.innerHTML += `<li style="padding:10px; border-bottom:1px solid #eee; display:flex; justify-content:space-between; align-items:center">
                 <span>${b}</span> <button class="btn-danger" style="font-size:0.7rem; padding:4px 8px" onclick="delBranch('${b}')"><i class="fa-solid fa-trash"></i></button>
             </li>`;
         });
@@ -418,7 +449,7 @@
         const filtered = localEmployees.filter(e => e.branch === branch && e.month === month);
         
         if(filtered.length === 0) {
-            list.innerHTML = '<li style="text-align:center; color:#999; padding:20px">لا يوجد بيانات لهذا الشهر.<br>أضف موظف جديد.</li>';
+            list.innerHTML = '<li style="text-align:center; color:#999; padding:20px; display:block">لا يوجد موظفين مسجلين لهذا الشهر والفرع.</li>';
         }
 
         filtered.sort((a,b) => a.name.localeCompare(b.name));
@@ -477,14 +508,15 @@
         const id = document.getElementById('empId').value.trim();
         const branch = document.getElementById('branchSelect').value;
         const month = document.getElementById('monthSelect').value;
+        const name = document.getElementById('empName').value.trim();
 
-        if(!id) return alert('أدخل رقم البصمة');
+        if(!id || !name) return alert('أدخل الاسم ورقم البصمة');
 
         const docId = `${branch}_${month}_${id}`; 
 
         const empData = {
             id, 
-            name: document.getElementById('empName').value.trim(),
+            name: name,
             branch, 
             month,
             job: document.getElementById('jobTitle').value,
@@ -506,7 +538,7 @@
     }
 
     function deleteEmployeeRecord() {
-        if(!confirm('هل أنت متأكد من حذف هذا السجل؟')) return;
+        if(!confirm('هل أنت متأكد من حذف هذا السجل نهائياً؟')) return;
         const id = document.getElementById('empId').value;
         const branch = document.getElementById('branchSelect').value;
         const month = document.getElementById('monthSelect').value;
@@ -594,7 +626,7 @@
                     }
                 }
             });
-            alert(`تم استيراد ${count} بصمة. اختر موظف ثم اضغط "جلب البصمة" لتطبيقها.`);
+            alert(`تم استيراد ${count} بصمة بنجاح في الذاكرة.\nقم بفتح ملف كل موظف واضغط "جلب بيانات البصمة" لتطبيقها.`);
         };
         reader.readAsArrayBuffer(file);
         e.target.value = '';
@@ -616,9 +648,9 @@
                     calcRow(tr);
                 }
             });
-            alert("تم تطبيق بيانات الإكسيل.");
+            alert("تم تطبيق بيانات الإكسيل على الجدول.");
         } else {
-            alert("لا توجد بيانات في ملف الإكسيل لهذا الكود والشهر.");
+            alert("لا توجد بصمات في ملف الإكسيل لهذا الكود وهذا الشهر.");
         }
     }
 
@@ -633,7 +665,7 @@
         const filtered = localEmployees.filter(e => e.branch === branch && e.month === month);
         
         if(filtered.length === 0) {
-            container.innerHTML = '<p style="grid-column:1/-1; text-align:center">لا توجد بيانات.</p>';
+            container.innerHTML = '<p style="grid-column:1/-1; text-align:center">لا توجد رواتب مسجلة لهذا الشهر.</p>';
             return;
         }
 
@@ -648,7 +680,7 @@
                         <tr> <td class="value-col">${c.workDays}</td> <td class="label-col">أيام العمل</td> </tr>
                         <tr> <td class="value-col">${c.basicSalary.toFixed(2)}</td> <td class="label-col">الأساسي</td> </tr>
                         <tr> <td class="value-col" style="color:green">${emp.financials.bonus}</td> <td class="label-col">إضافي</td> </tr>
-                        <tr> <td class="value-col" style="color:red">${c.totalDeduct.toFixed(2)}</td> <td class="label-col">خصومات</td> </tr>
+                        <tr> <td class="value-col" style="color:red">${c.totalDeduct.toFixed(2)}</td> <td class="label-col">إجمالي الخصم</td> </tr>
                         <tr style="background:#ecfdf5; font-size:1.1rem; border-top:2px solid #000"> 
                             <td class="value-col">${c.net.toFixed(2)}</td> <td class="label-col">الصافي</td> 
                         </tr>
