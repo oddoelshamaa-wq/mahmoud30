@@ -19,7 +19,7 @@
 
     <style>
         :root {
-            --primary: #1e3a8a; /* الأزرق الغامق كما في الصورة */
+            --primary: #1e3a8a; /* الأزرق الغامق */
             --primary-light: #3b82f6;
             --bg-body: #f1f5f9;
             --surface: #ffffff;
@@ -94,17 +94,15 @@
         .attendance-table input:focus { background: #eff6ff; }
 
         /* ============================== */
-        /* === تصميم الطباعة (الجديد) === */
+        /* === تصميم الطباعة === */
         /* ============================== */
-        
-        /* تصميم الكروت (مثل الصورة الأولى) */
         .preview-wrapper-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; padding: 20px; }
         .salary-card { 
             background: #fff; border: 1px solid #ccc; border-radius: 8px; overflow: hidden; page-break-inside: avoid; 
             font-family: 'Tajawal', sans-serif;
         }
         .salary-card .card-header { 
-            background-color: #1e3a8a !important; /* الأزرق الغامق */
+            background-color: #1e3a8a !important; 
             color: white !important; 
             padding: 10px; 
             text-align: center; 
@@ -133,11 +131,10 @@
         .salary-card .val-red { color: #b91c1c; }
         .salary-card .val-green { color: #15803d; }
 
-        /* تصميم القائمة الكاملة (مثل الصورة الثالثة) */
         .branch-summary-table { width: 100%; border-collapse: collapse; font-size: 0.9rem; page-break-inside: auto; }
         .branch-summary-table th { 
             background-color: #f1f5f9 !important; border: 1px solid #ccc; padding: 10px; font-weight: bold;
-            -webkit-print-color-adjust: exact;
+            -webkit-print-color-adjus: exact;
         }
         .branch-summary-table td { border: 1px solid #ccc; padding: 8px; text-align: center; }
         .branch-summary-table tr:nth-child(even) { background-color: #fcfcfc; }
@@ -283,7 +280,6 @@
                         <button class="btn-primary" onclick="window.print()">
                             <i class="fa-solid fa-print"></i> طباعة
                         </button>
-                        <!-- أزرار التبديل بين طرق العرض -->
                         <button class="btn-secondary" onclick="preparePrint('cards')">
                             <i class="fa-solid fa-id-card"></i> عرض الكروت
                         </button>
@@ -293,7 +289,6 @@
                         <button class="btn-danger" onclick="switchView('main')">عودة</button>
                     </div>
                 </div>
-                <!-- الحاوية التي سيوضع فيها المحتوى -->
                 <div id="printPreviewContainer"></div>
             </div>
 
@@ -346,7 +341,7 @@
     let localEmployees = []; 
     let branches = ['الفرع الرئيسي'];
     let attendanceBuffer = {}; 
-    let currentPrintMode = 'cards'; // cards or list
+    let currentPrintMode = 'cards'; 
     
     // ==========================================
     // 3. إدارة المستخدم
@@ -423,7 +418,7 @@
         if(view === 'main') document.querySelector('.sidebar li:nth-child(1)').classList.add('active');
         if(view === 'print') {
             document.querySelector('.sidebar li:nth-child(2)').classList.add('active');
-            preparePrint('cards'); // Default view
+            preparePrint('cards'); 
         }
         if(view === 'settings') document.querySelector('.sidebar li:nth-child(3)').classList.add('active');
     }
@@ -444,7 +439,7 @@
     }
 
     // ==========================================
-    // 6. إدارة الموظفين (مع التعديل لإظهار الكل)
+    // 6. إدارة الموظفين
     // ==========================================
     function renderEmployees() {
         const branch = document.getElementById('branchSelect').value;
@@ -452,17 +447,13 @@
         const list = document.getElementById('employeesList');
         list.innerHTML = '';
 
-        // 1. تصفية الموظفين التابعين للفرع بغض النظر عن الشهر
         let branchEmployees = localEmployees.filter(e => e.branch === branch);
 
-        // 2. إزالة التكرار (للحصول على قائمة فريدة بأسماء الموظفين)
         const uniqueMap = new Map();
         branchEmployees.forEach(emp => {
-            // نستخدم ID كمفتاح. إذا تكرر، نفضل السجل الخاص بالشهر الحالي، أو الأحدث
             if(!uniqueMap.has(emp.id)) {
                 uniqueMap.set(emp.id, emp);
             } else {
-                // لو السجل الحالي في الـ Map ليس للشهر المختار، وهذا السجل الجديد للشهر المختار، نستبدله
                 const existing = uniqueMap.get(emp.id);
                 if(emp.month === currentMonth) {
                     uniqueMap.set(emp.id, emp);
@@ -478,7 +469,6 @@
         }
 
         uniqueEmps.forEach(emp => {
-            // التحقق مما إذا كان لهذا الموظف سجل في الشهر الحالي تحديداً
             const isRegisteredInCurrentMonth = localEmployees.some(e => e.id === emp.id && e.branch === branch && e.month === currentMonth);
             
             const li = document.createElement('li');
@@ -488,7 +478,6 @@
                      style="background-color: ${isRegisteredInCurrentMonth ? 'var(--success)' : '#cbd5e1'}" 
                      title="${isRegisteredInCurrentMonth ? 'مسجل هذا الشهر' : 'غير مسجل هذا الشهر'}"></div>
             `;
-            // عند الضغط، نرسل الـ ID، والبيانات "الأصلية" (لنسخها في حال لم يكن مسجلاً)
             li.onclick = () => loadEmpForm(emp.id, emp);
             
             if(document.getElementById('empId').value == emp.id) li.classList.add('selected');
@@ -510,38 +499,30 @@
         const branch = document.getElementById('branchSelect').value;
         const month = document.getElementById('monthSelect').value;
 
-        // محاولة العثور على سجل لهذا الشهر تحديداً
         let emp = localEmployees.find(e => e.id === id && e.branch === branch && e.month === month);
 
         if (emp) {
-            // === حالة 1: الموظف مسجل في هذا الشهر ===
             fillFormData(emp);
             document.getElementById('formTitle').innerText = 'تعديل: ' + emp.name;
             document.getElementById('btnDeleteRecord').style.display = 'block';
         } else {
-            // === حالة 2: الموظف غير مسجل لهذا الشهر، ننسخ بياناته الأساسية من السجل القديم ===
-            resetForm(); // تفريغ الحقول أولاً
+            resetForm(); 
             document.getElementById('empName').value = masterData.name;
             document.getElementById('empId').value = masterData.id;
             document.getElementById('jobTitle').value = masterData.job;
             document.getElementById('dailyWage').value = masterData.financials.wage;
             
-            // تصفير المتغيرات الشهرية
             document.getElementById('bonus').value = '';
             document.getElementById('loans').value = '';
             document.getElementById('insurance').value = ''; 
-            // يمكن تثبيت التأمينات إذا كانت ثابتة، لكن للأمان نصفرها
             
             document.getElementById('formTitle').innerText = 'تسجيل شهر جديد: ' + masterData.name;
             document.getElementById('btnDeleteRecord').style.display = 'none';
         }
 
-        document.getElementById('empId').disabled = true; // منع تغيير الـ ID
-        
-        // إعادة التظليل
+        document.getElementById('empId').disabled = true;
         const listItems = document.querySelectorAll('.emp-list li');
         listItems.forEach(li => li.classList.remove('selected'));
-        // (تظليل بسيط عبر إعادة الرسم أو البحث عن العنصر)
     }
 
     function fillFormData(emp) {
@@ -639,7 +620,9 @@
         return data;
     }
 
-    // Excel Logic (مختصر)
+    // ==========================================
+    // Excel Logic (المعدل لمنع التكرار)
+    // ==========================================
     document.getElementById('excelInput').addEventListener('change', function(e) {
         const file = e.target.files[0]; if(!file) return;
         const reader = new FileReader();
@@ -647,44 +630,74 @@
             const workbook = XLSX.read(evt.target.result, {type:'array'});
             const sheet = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]], {header:1});
             attendanceBuffer = {}; let count = 0;
+            
             sheet.forEach((row, idx) => {
-                if(idx === 0) return;
+                if(idx === 0) return; // تخطي العنوان
+                
+                // قراءة البيانات من الأعمدة (العمود C هو ID، العمود D هو التاريخ والوقت)
                 let id = row[2], dateRaw = row[3]; 
+                
                 if(id && dateRaw) {
-                    id = id.toString().trim();
+                    id = id.toString().trim(); // تنظيف الـ ID
+                    
+                    // تحويل التاريخ (سواء كان رقم Excel أو نص)
                     let dateObj = typeof dateRaw === 'number' ? new Date((dateRaw - 25569)*86400*1000) : new Date(dateRaw);
+                    
                     if(!isNaN(dateObj)) {
                         const monthKey = `${dateObj.getFullYear()}-${String(dateObj.getMonth()+1).padStart(2,'0')}`;
                         const day = dateObj.getDate();
                         const time = `${String(dateObj.getHours()).padStart(2,'0')}:${String(dateObj.getMinutes()).padStart(2,'0')}`;
+                        
                         const key = `${id}_${monthKey}`;
                         if(!attendanceBuffer[key]) attendanceBuffer[key] = {};
                         if(!attendanceBuffer[key][day]) attendanceBuffer[key][day] = [];
+                        
+                        // إضافة الوقت للقائمة (سيتم فلترة التكرار لاحقاً عند العرض)
                         attendanceBuffer[key][day].push(time);
                         count++;
                     }
                 }
             });
-            alert(`تم استيراد ${count} بصمة.`);
+            alert(`تم قراءة ${count} بصمة. اضغط على "جلب بيانات البصمة" داخل الموظف لتطبيقها.`);
         };
         reader.readAsArrayBuffer(file); e.target.value = '';
     });
+
+    // دالة جلب البصمة (تم تحديثها لمنع التكرار وأخذ أول دخول وآخر خروج فقط)
     function loadAttendanceFromDB() {
-        const id = document.getElementById('empId').value;
+        // التأكد من أن الـ ID نص للمقارنة الصحيحة
+        const id = document.getElementById('empId').value.toString().trim();
         const month = document.getElementById('monthSelect').value;
         const key = `${id}_${month}`;
+
         if(attendanceBuffer[key]) {
+            let daysUpdated = 0;
             Object.keys(attendanceBuffer[key]).forEach(day => {
-                const times = attendanceBuffer[key][day].sort();
+                // 1. إزالة التكرار المطابق تماماً باستخدام Set
+                let times = [...new Set(attendanceBuffer[key][day])];
+                
+                // 2. ترتيب الأوقات تصاعدياً (من الصباح للمساء)
+                times.sort();
+                
                 const tr = document.querySelector(`tr[data-day="${day}"]`);
                 if(tr && times.length > 0) {
+                    // أول وقت هو الدخول
                     tr.querySelector('.in').value = times[0];
-                    if(times.length > 1) tr.querySelector('.out').value = times[times.length-1];
-                    calcRow(tr);
+                    
+                    // إذا كان هناك أكثر من وقت، آخر وقت هو الخروج
+                    // (يتم تجاهل أي بصمات في المنتصف تلقائياً)
+                    if(times.length > 1) {
+                        tr.querySelector('.out').value = times[times.length-1];
+                    }
+                    
+                    calcRow(tr); // إعادة حساب الساعات
+                    daysUpdated++;
                 }
             });
-            alert("تم التطبيق");
-        } else alert("لا توجد بيانات");
+            alert(`تم تحديث بيانات ${daysUpdated} يوم لهذا الموظف.`);
+        } else {
+            alert("لا توجد بيانات بصمة لهذا الرقم (ID) في هذا الشهر داخل ملف الإكسل المستورد.");
+        }
     }
 
     // ==========================================
@@ -698,7 +711,6 @@
         const branch = document.getElementById('branchSelect').value;
         const month = document.getElementById('monthSelect').value;
         
-        // جلب الموظفين المسجلين في هذا الشهر فقط للطباعة
         const filtered = localEmployees.filter(e => e.branch === branch && e.month === month);
         
         if(filtered.length === 0) {
@@ -707,7 +719,6 @@
         }
 
         if(mode === 'cards') {
-            // === عرض الكروت (مطابق للصورة) ===
             let html = '';
             filtered.forEach(emp => {
                 const c = calculateSalary(emp);
@@ -737,7 +748,6 @@
             container.innerHTML = html;
 
         } else {
-            // === عرض القائمة الكاملة (مطابق للصورة الثالثة) ===
             const dateObj = new Date(month + "-01");
             const monthName = dateObj.toLocaleDateString('ar-EG', { month: 'long', year: 'numeric' });
             
@@ -788,9 +798,8 @@
         }
         
         const wage = emp.financials.wage || 0;
-        const hourlyRate = wage / 8; // افتراض يوم العمل 8 ساعات
+        const hourlyRate = wage / 8; 
         
-        // الحسابات
         const basicSalary = workDays * wage;
         const delayValue = delayHours * hourlyRate;
         const loanDeduct = (emp.financials.loans || 0) / (emp.financials.loanMonths || 1);
